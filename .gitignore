@@ -1,0 +1,10 @@
+# Dev Tooling
+
+
+# Build
+/game/src/data/main.rs
+
+# Added by cargo
+
+/builder/target
+/game/target

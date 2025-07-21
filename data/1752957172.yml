@@ -1,0 +1,10 @@
+metaname: "Tavern Cellar Door to Main"
+metadata:
+  - "Tavern"
+id: 1752957172
+type: "Exit"
+name: "Door to Main Room"
+description: |
+  An old door
+location: 1752957091
+to: 1752956389

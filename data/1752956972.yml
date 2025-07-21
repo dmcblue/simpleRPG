@@ -1,0 +1,10 @@
+metaname: "Tavern Main Room Cellar Door"
+metadata:
+  - "Tavern"
+id: 1752956972
+type: "Exit"
+name: "Door to the Cellar"
+description: |
+  An old door stained with beer
+location: 1752956389
+to: 1752957091

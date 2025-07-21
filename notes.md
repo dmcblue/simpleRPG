@@ -51,3 +51,7 @@ WORLD MAP locations (other than special locs) ie travel mid points / random enco
 
 World Map:
  - Is it a map? Can I travel to random locations? Or is it lines from city to city?
+
+
+Persisting state changes...
+Start with base world state
