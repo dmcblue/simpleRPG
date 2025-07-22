@@ -14,8 +14,11 @@ containsElement () (
 help () (
     messages=(
 		"srd <command>\n"
-		"\t- help / --help / -h: Displays this message\n"
-		"\t- make: Creates a new data/content object\n"
+		"\t- help / --help / -h: Displays this message.\n"
+		"\t- make: Creates a new data/content object.\n"
+		"\t- build: Converts YML data to Rust code.\n"
+		"\t- run: Runs the game.\n"
+		"\t- debug: Runs the game with backtrace displayed on error.\n"
         "srd make <ObjectType>"
         "\tObjectType: Location, Person, Exit"
 	)
@@ -52,6 +55,10 @@ elif [[ "$command" == "make" ]]; then
 elif [[ "$command" == "build" ]]; then
     cd builder
     cargo run
+    cd ..
+elif [[ "$command" == "debug" ]]; then
+    cd game
+    RUST_BACKTRACE=1 cargo run
     cd ..
 elif [[ "$command" == "run" ]]; then
     cd game

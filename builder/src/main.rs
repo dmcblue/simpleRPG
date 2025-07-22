@@ -15,14 +15,14 @@ struct Entity {
     entity_type: String,
     metaname: String,
     metadata: Vec<String>,
-    starting_location: Option<u32>,
-    id: Option<u32>,
+    starting_location: Option<usize>,
+    id: Option<usize>,
     //#[serde(default)]
     name: Option<String>,
     description: Option<String>,
     // Exit Specific
-    location: Option<u32>,
-    to: Option<u32>,
+    location: Option<usize>,
+    to: Option<usize>,
 }
 
 fn main() {
@@ -30,13 +30,12 @@ fn main() {
 
     let mut file = File::create("../game/src/data/main.rs").unwrap();
     let _ = file.write_all(
-        b"use super::state::State;\n\
-        use super::components::Components;\n\n\
-        pub fn load_data(components: &mut Components, state: &mut State) {\n"
+        b"use super::components::Components;\n\n\
+        pub fn load_data(components: &mut Components) {\n"
     );
-    let mut index: u32 = 0;
-    let mut id_map: HashMap<u32, u32> = HashMap::new();
-
+    let mut index: usize = 0;
+    let mut id_map: HashMap<usize, usize> = HashMap::new();
+    let mut start_id: usize = 0;
     // TODO: Pre-hash everything and rearrange so locations are first
     // then you can use the component.locations as an array of Vec
     // instead of a hashmap
@@ -45,7 +44,9 @@ fn main() {
         let contents = fs::read_to_string(file_path).unwrap();
         let entity: Entity = serde_yml::from_str(&contents).unwrap();
 
-        if entity.entity_type != "Game" {
+        if entity.entity_type == "Game" {
+            start_id = entity.starting_location.unwrap();
+        } else {
             id_map.insert(entity.id.unwrap(), index);
             if entity.entity_type == "Location" {
                 let _ = file.write_all(
@@ -65,15 +66,16 @@ fn main() {
         let contents = fs::read_to_string(file_path).unwrap();
         let entity: Entity = serde_yml::from_str(&contents).unwrap();
 
-        if entity.entity_type == "Game" {
-            let _ = file.write_all(
-                format!(
-                    "\tstate.current_location = {};\n", 
-                    id_map.get(&entity.starting_location.unwrap()).unwrap()
-                ).as_bytes()
-            );
-        } else {
-            let id: &u32 = id_map.get(&entity.id.unwrap()).unwrap();
+        // if entity.entity_type == "Game" {
+        //     let _ = file.write_all(
+        //         format!(
+        //             "\tstate.current_location = {};\n", 
+        //             id_map.get(&entity.starting_location.unwrap()).unwrap()
+        //         ).as_bytes()
+        //     );
+        // } else 
+        if entity.entity_type != "Game"{
+            let id: &usize = id_map.get(&entity.id.unwrap()).unwrap();
             let _ = file.write_all(
                 format!(
                     "\tcomponents.names.insert({}, \"{}\");\n", 
@@ -117,5 +119,5 @@ fn main() {
             }
         }
     }
-    let _ = file.write_all(b"}\n");
+    let _ = file.write_all(format!("}}\n\npub fn get_start_location_id() -> usize {{ {} }}", id_map.get(&start_id).unwrap()).as_bytes());
 }
