@@ -1,4 +1,6 @@
 use std::io::{self, Write};
+use simple::{Rect, Window};
+use macroquad::prelude::*;
 
 mod data;
 
@@ -186,36 +188,62 @@ fn get_input(prompt: &str) -> String{
 	return input.trim().to_string();
 }
 
-fn main() {
+#[macroquad::main("MyGame")]
+async fn main() {
 
-	let mut game = Game {
-		components: data::make_components(),
-		scene: Scene{
-			location_id: 0,
-			entity_ids: Vec::new(),
-			exit_ids: Vec::new(),
-			takeable_item_ids: Vec::new(),
-			actions: Vec::new(),
-		},
-		state: State {
-			current_location: data::main::get_start_location_id(),
-			last_action_type: ActionType::GO,
-		},
-	};
-	// let mut components = data::make_components();
-
-	// let mut state = State {
-	// 	current_location: data::main::get_start_location_id(),
+	// let mut game = Game {
+	// 	components: data::make_components(),
+	// 	scene: Scene{
+	// 		location_id: 0,
+	// 		entity_ids: Vec::new(),
+	// 		exit_ids: Vec::new(),
+	// 		takeable_item_ids: Vec::new(),
+	// 		actions: Vec::new(),
+	// 	},
+	// 	state: State {
+	// 		current_location: data::main::get_start_location_id(),
+	// 		last_action_type: ActionType::GO,
+	// 	},
 	// };
-	data::main::load_data(&mut game.components);
+
+	// data::main::load_data(&mut game.components);
+
+	// loop {
+	// 	game.setup_scene();
+	// 	game.render();
+	// 	let input: String = get_input("> ");
+	// 	match game.update(input) {
+	// 		Err(s) => { println!("{}", s); break; },
+	// 		_ => ()
+	// 	}
+	// }
+
+	// let mut app = Window::new("hello world", 1920, 1080);
+
+	// app.set_color(255, 0, 255, 255);
+	// app.draw_rect(Rect::new(
+	// 	100,
+	// 	110,
+	// 	120,
+	// 	130,
+	// ));
+
+	// while app.next_frame() {}
 
 	loop {
-		game.setup_scene();
-		game.render();
-		let input: String = get_input("> ");
-		match game.update(input) {
-			Err(s) => { println!("{}", s); break; },
-			_ => ()
-		}
-	}
+        clear_background(RED);
+
+        draw_line(40.0, 40.0, 100.0, 200.0, 15.0, BLUE);
+        draw_rectangle(screen_width() / 2.0 - 60.0, 100.0, 120.0, 60.0, GREEN);
+
+        draw_text("Hello, Macroquad!", 20.0, 20.0, 30.0, DARKGRAY);
+
+        next_frame().await
+    }
 }
+
+
+//   = note:  "cc" "-m64" "/tmp/rustcWctBLs/symbols.o" "<6 object files omitted>" "-Wl,--as-needed" "-Wl,-Bstatic" "/home/dmcblue/repos/simpleRPG/game/target/debug/deps/{libsimple-8e5f166cf68014c8.rlib,libsdl2-036102dbef4e200e.rlib,librand-351e4f2c4c4df3be.rlib,librand_xorshift-b234e5460f2c08eb.rlib,librand_pcg-f2f4d98c807b26e6.rlib,librand_hc-bb1be84f56d2a4af.rlib,librand_chacha-74e9e86618b85130.rlib,librand_isaac-d1a241b6c54747d2.rlib,librand_core-543e6033f4254532.rlib,librand_os-f9ac76fa909b0da8.rlib,librand_jitter-061216ef9e2942b9.rlib,librand_core-2863a1a60851be8f.rlib,libsdl2_sys-7e0e970abcd25588.rlib,libbitflags-e95052d8631a81a3.rlib,liblazy_static-0c9a5365c3da512b.rlib,libnum-47320607a47896af.rlib,libnum_rational-7f9afc9fb4984df9.rlib,libnum_bigint-5c164b72e2558b6f.rlib,libnum_complex-82fe0879865c179d.rlib,librustc_serialize-9152884cb6afe7bd.rlib,libnum_iter-c0affb480ebcca16.rlib,libnum_integer-baf778261a00f848.rlib,libnum_traits-42307217b1538fab.rlib,librand-c82415d2b7ec2746.rlib,librand-2eadf35e6c4f25b8.rlib,liblibc-5fa44a51d38a17f7.rlib}.rlib" "<sysroot>/lib64/rustlib/x86_64-unknown-linux-gnu/lib/{libstd-*,libpanic_unwind-*,libobject-*,libmemchr-*,libaddr2line-*,libgimli-*,librustc_demangle-*,libstd_detect-*,libhashbrown-*,librustc_std_workspace_alloc-*,libminiz_oxide-*,libadler2-*,libunwind-*,libcfg_if-*,liblibc-*,liballoc-*,librustc_std_workspace_core-*,libcore-*,libcompiler_builtins-*}.rlib" "-Wl,-Bdynamic" "-lSDL2" "-lSDL2_image" "-lgcc_s" "-lutil" "-lrt" "-lpthread" "-lm" "-ldl" "-lc" "-L" "/tmp/rustcWctBLs/raw-dylibs" "-Wl,--eh-frame-hdr" "-Wl,-z,noexecstack" "-L" "<sysroot>/lib64/rustlib/x86_64-unknown-linux-gnu/lib" "-o" "/home/dmcblue/repos/simpleRPG/game/target/debug/deps/simpleRPG-8713ae327ec91a1e" "-Wl,--gc-sections" "-pie" "-Wl,-z,relro,-z,now" "-nodefaultlibs"
+//   = note: some arguments are omitted. use `--verbose` to show all linker arguments
+//   = note: /bin/ld: cannot find -lSDL2_image: No such file or directory
+//           collect2: error: ld returned 1 exit status
