@@ -11,6 +11,7 @@ use serde_yml;
 // use yaml_rust2::{Yaml, YamlLoader, YamlEmitter};
 
 const ENTITY_TYPE_EXIT: &str = "Exit";
+const ENTITY_TYPE_ITEM: &str = "Item";
 const ENTITY_TYPE_LOCATION: &str = "Location";
 const ENTITY_TYPE_PERSON: &str = "Person";
 
@@ -28,6 +29,7 @@ struct Entity {
 	description: Option<String>,
 	// Exit Specific
 	location: Option<usize>,
+	takeable: Option<bool>,
 	to: Option<usize>,
 }
 
@@ -39,89 +41,44 @@ fn main() {
 		b"use super::components::Components;\n\n\
 		pub fn load_data(components: &mut Components) {\n"
 	);
-	// let mut index: usize = 0;
-	// let mut id_map: HashMap<usize, usize> = HashMap::new();
 	let mut start_id: usize = 0;
-	// TODO: Pre-hash everything and rearrange so locations are first
-	// then you can use the component.locations as an array of Vec
-	// instead of a hashmap
-	//
-	// 
+	let mut exits: Vec<usize> = Vec::new();
+	let mut items: Vec<usize> = Vec::new();
 	let mut locations: Vec<usize> = Vec::new();
 	let mut people: Vec<usize> = Vec::new();
-	let mut exits: Vec<usize> = Vec::new();
 	let mut entities: HashMap<usize, Entity> = HashMap::new();
+	let mut inventory_id: usize = 0;
 	for path in paths {
 		let file_path = path.unwrap().path();
 		let contents = fs::read_to_string(file_path).unwrap();
 		let entity: Entity = serde_yml::from_str(&contents).unwrap();
-		// let docs = YamlLoader::load_from_str(contents).unwrap();
-
-		// // Multi document support, doc is a yaml::Yaml
-		// let item: &Yaml = &docs[0];
-		// let entity = Entity {
-		// 	entity_type: item["type"],
-		// 	metaname: String,
-		// 	metadata: Vec<String>,
-		// 	starting_location: Option<usize>,
-		// 	id: Option<usize>,
-		// 	//#[serde(default)]
-		// 	name: Option<String>,
-		// 	description: Option<String>,
-		// 	// Exit Specific
-		// 	location: Option<usize>,
-		// 	to: Option<usize>,
-		// };
 
 		if entity.entity_type == "Game" {
 			start_id = entity.starting_location.unwrap();
 		} else {
 			let id: usize = entity.id.unwrap();
-			// id_map.insert(id, index);
-			// let entity_type = entity.clone().entity_type;
-			// if entity_type == ENTITY_TYPE_EXIT {
-			// 	exits.push(id);
-			// } else if entity_type == ENTITY_TYPE_LOCATION {
-			// 	locations.push(id);
-			// }  else if entity_type == ENTITY_TYPE_PERSON {
-			// 	people.push(id);
-			// }
 			match entity.entity_type.as_str() {
+				ENTITY_TYPE_EXIT => { exits.push(id); },
+				ENTITY_TYPE_ITEM => { items.push(id); },
 				ENTITY_TYPE_LOCATION => { locations.push(id); },
 				ENTITY_TYPE_PERSON => { people.push(id); },
-				ENTITY_TYPE_EXIT => { exits.push(id); },
 				_ => ()
 			}
+			if entity.metaname == "Inventory" {
+				inventory_id = id;
+			}
 			entities.insert(id, entity);
-			// 	ENTITY_TYPE_LOCATION => {
-			// 		// let _ = file.write_all(
-			// 		//	 format!(
-			// 		//		 "\tcomponents.locations.insert({}, Vec::new());\n", 
-			// 		//		 index
-			// 		//	 ).as_bytes()
-			// 		// );
-			// 		locations.push(id);
-			// 	},
-			// 	ENTITY_TYPE_PERSON => { people.push(id); },
-			// 	ENTITY_TYPE_EXIT => { exits.push(id); },
-			// 	_ => ()
-			// }
-
-			// index = index + 1;
 		}
 	}
 	let mut index: usize = 0;
 	let mut id_map: HashMap<usize, usize> = HashMap::new();
-	// let mut ids: Vec<usize> =  Vec::new();
-
-	// println!("{:?}", entities);
-	// println!("{:?}", id_map);
-	// println!("{:?}", locations);
-	// println!("{:?}", people);
-	// println!("{:?}", exits);
-
 
 	for entity_id in locations.iter() {
+		id_map.insert(*entity_id, index);
+		index = index + 1;
+	}
+	let items_start = index;
+	for entity_id in items.iter() {
 		id_map.insert(*entity_id, index);
 		index = index + 1;
 	}
@@ -141,14 +98,14 @@ fn main() {
 			format!(
 				"\tcomponents.names[{}] = \"{}\";\n", 
 				index, 
-				entity.name.unwrap()
+				str::replace(entity.name.unwrap().as_str(), "\"", "\\\"")
 			).as_bytes()
 		);
 		let _ = file.write_all(
 			format!(
 				"\tcomponents.descriptions[{}] = \"{}\";\n", 
 				index, 
-				entity.description.unwrap()
+				str::replace(entity.description.unwrap().as_str(), "\"", "\\\"")
 			).as_bytes()
 		);
 		// non-locations
@@ -188,6 +145,23 @@ fn main() {
 				).as_bytes()
 			);
 		}
+		// items only 
+		else if index >= items_start {
+			let _ = file.write_all(
+				format!(
+					"\tcomponents.takeable[{}] = {};\n",
+					index - items_start,
+					&entity.takeable.unwrap()
+				).as_bytes()
+			);
+			let _ = file.write_all(
+				format!(
+					"\tcomponents.locations[{}].push({});\n", 
+					id_map.get(&entity.location.unwrap()).unwrap(),
+					index
+				).as_bytes()
+			);
+		}
 
 		let _ = file.write_all(
 			"\n".as_bytes()
@@ -205,7 +179,10 @@ pub struct Components<'a> {{
 	pub locations: [Vec<usize>; {}],
 	pub names: [&'a str; {}],
 	pub exits_start: usize,
+	pub items_start: usize,
 	pub people_start: usize,
+	pub inventory_id: usize,
+	pub takeable: [bool; {}],
 }}
 
 pub fn make_components<'a>() -> Components<'a> {{
@@ -215,7 +192,10 @@ pub fn make_components<'a>() -> Components<'a> {{
 		locations: [(); {}].map(|_| Vec::new()),
 		names: [\"\"; {}],
 		exits_start: {},
+		items_start: {},
 		people_start: {},
+		inventory_id: {},
+		takeable: [false; {}],
 	}};
 }}
 ", 
@@ -224,6 +204,7 @@ pub fn make_components<'a>() -> Components<'a> {{
 		exits.len(),
 		locations.len(),
 		index,
+		items.len(),
 
 		// Component init
 		index,
@@ -231,6 +212,9 @@ pub fn make_components<'a>() -> Components<'a> {{
 		locations.len(),
 		index,
 		exits_start,
-		people_start
+		items_start,
+		people_start,
+		id_map.get(&inventory_id).unwrap(),
+		items.len()
 	).as_bytes());
 }
