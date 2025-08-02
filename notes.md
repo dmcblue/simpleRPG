@@ -1,36 +1,36 @@
 # Notes
 
 - You are in a location, what's there?
-    - Exits -> Items with movement triggers
-    - Items
-    - People -> trigger Combat, Conversation, Trade, etc
-    - Metadata?
+	- Exits -> Items with movement triggers
+	- Items
+	- People -> trigger Combat, Conversation, Trade, etc
+	- Metadata?
 
 [Entity Component System](https://en.wikipedia.org/wiki/Entity_component_system)
 https://www.codingwiththomas.com/blog/an-entity-component-system-from-scratch
 ```
 Location: Tavern Main Room
 Entities:
-    BarTender:
-        Talk -> Trigger Conversation XYZ
-        Barter -> Trigger Market XYZ
-    Jerk:
-        Talk -> Trigger -> Converstaion ABC
-        Attack -> Trigger -> Fight with Jerk
-    Candle:
-        (Take) Move to Me -> Trigger -> Move Candle
-        Use with <Fire> -> Trigger -> Swap Lit Candle
+	BarTender:
+		Talk -> Trigger Conversation XYZ
+		Barter -> Trigger Market XYZ
+	Jerk:
+		Talk -> Trigger -> Converstaion ABC
+		Attack -> Trigger -> Fight with Jerk
+	Candle:
+		(Take) Move to Me -> Trigger -> Move Candle
+		Use with <Fire> -> Trigger -> Swap Lit Candle
 Components:
-    Exit to ABC
-    Exit to DEF
-    Description
-    LongDescription
+	Exit to ABC
+	Exit to DEF
+	Description
+	LongDescription
 ```
 
 To do all this, you need:
 - A means of intellegently reading/searching/aggregating/understanding a complete, _machine-readable_ data set.
-    - ie jq in a fancy outfit
-    - logseq, knowledge graph
+	- ie jq in a fancy outfit
+	- logseq, knowledge graph
 - Means to check for dangling data points (unreachable dialog, undeclared state)
 - Converting data to code
 - Converting data to state

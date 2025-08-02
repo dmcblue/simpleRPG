@@ -6,21 +6,21 @@ TEMPLATES_DIR="$BASE/templates"
 DATA_DIR="$BASE/data"
 
 containsElement () (
-    local e match="$1"
-    shift
-    for e; do [[ "$e" == "$match" ]] && return 0; done
-    return 1
+	local e match="$1"
+	shift
+	for e; do [[ "$e" == "$match" ]] && return 0; done
+	return 1
 )
 help () (
-    messages=(
+	messages=(
 		"srd <command>\n"
 		"\t- help / --help / -h: Displays this message.\n"
 		"\t- make: Creates a new data/content object.\n"
 		"\t- build: Converts YML data to Rust code.\n"
 		"\t- run: Runs the game.\n"
 		"\t- debug: Runs the game with backtrace displayed on error.\n"
-        "srd make <ObjectType>"
-        "\tObjectType: Location, Person, Exit"
+		"srd make <ObjectType>\n"
+		"\tObjectType: Location, Person, Exit\n"
 	)
 	printf "${messages[*]}"
 )
@@ -31,37 +31,39 @@ error() (
 	exit 1
 )
 get_id() (
-    date +%s
+	date +%s
 )
 
 HELP_OPTIONS=("help" "--help" "-h")
 
 command=$1
 if containsElement "$command" "${HELP_OPTIONS[@]}"; then
-    help
+	help
 elif [[ "$command" == "make" ]]; then
-    next_id=$(get_id)
-    template_kind="$2"
-    if [[ -z "$template_kind" ]];then
-        error "No object type provided"
-    fi
-    template_file="$TEMPLATES_DIR/$template_kind.yml"
-    if [[ -f "$template_file" ]]; then
-        sed "s/\$SRD_ID/$next_id/" $template_file > "$DATA_DIR/$next_id.yml"
-        echo "$DATA_DIR/$next_id.yml"
-    else
-        error "No type '$template_kind'"
-    fi
+	next_id=$(get_id)
+	template_kind="$2"
+	if [[ -z "$template_kind" ]];then
+		error "No object type provided"
+	fi
+	template_file="$TEMPLATES_DIR/$template_kind.yml"
+	if [[ -f "$template_file" ]]; then
+		sed "s/\$SRD_ID/$next_id/" $template_file > "$DATA_DIR/$next_id.yml"
+		echo "$DATA_DIR/$next_id.yml"
+	else
+		error "No type '$template_kind'"
+	fi
 elif [[ "$command" == "build" ]]; then
-    cd builder
-    cargo run
-    cd ..
+	cd builder
+	cargo run
+	cd ..
 elif [[ "$command" == "debug" ]]; then
-    cd game
-    RUST_BACKTRACE=1 cargo run
-    cd ..
+	cd game
+	RUST_BACKTRACE=1 cargo run
+	cd ..
 elif [[ "$command" == "run" ]]; then
-    cd game
-    cargo run
-    cd ..
+	cd game
+	cargo run
+	cd ..
+else
+	error "No arguments given"
 fi

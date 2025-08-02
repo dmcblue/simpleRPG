@@ -3,6 +3,7 @@
 
 # Build
 /game/src/data/main.rs
+/game/src/data/components.rs
 
 # Added by cargo
 
