@@ -13,6 +13,11 @@ Ensure the following programs are install:
 - [yq](https://github.com/mikefarah/yq)
 - [rust](https://www.rust-lang.org/)
 
+#### Arch
+
+sdl2 sdl2_image libx11 libxi mesa-libgl alsa-lib xwayland
+
+
 ### Tools
 
 Much of the game development work can be done with the `srd` tool found in the `bin` folder.
