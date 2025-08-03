@@ -1,7 +1,9 @@
 use std::io::{self, Write};
-use simple::{Rect, Window};
+use std::collections::HashMap;
+// use simple::{Rect, Window};
 use macroquad::prelude::*;
 use std::collections::VecDeque;
+use std::time::{Instant, Duration};
 
 mod action;
 use action::{Action, ActionType};
@@ -40,65 +42,23 @@ async fn main() {
 		state: State {
 			current_location: data::main::get_start_location_id(),
 			last_action_type: ActionType::GO,
+			state_changes: HashMap::new()
 		}
 	};
+	let mut lastsec = Instant::now();
 
 	data::main::load_data(&mut game.components);
 
-	// interface.init();
-	// loop {
-	// 	game.setup_scene();
-	// 	interface.render(&game);
-	// 	let input: String = interface.get_input();
-	// 	if input == "quit" {
-	// 		// return Err("Goodbye!");
-	// 		println!("Goodbye!");
-	// 		break;
-	// 	} else {
-	// 		let mut i: usize = input.parse::<usize>().unwrap();
-	// 		i = i - 1;
-	// 		let action = &game.scene.actions[i];
-	// 		game.state.last_action_type = action.action_type.clone();
-	// 		match action.action_type {
-	// 			ActionType::CHECK_INVENTORY => interface.open_inventory(&game),
-	// 			ActionType::GO => {
-	// 				game.state.current_location = 
-	// 					game.components.destinations[action.arg_1.unwrap() - game.components.exits_start]
-	// 			},
-	// 			ActionType::LOOK => interface.render_detailed(&game),
-	// 			ActionType::TAKE => {
-	// 				let id = action.arg_1.unwrap();
-	// 				let index = game.components.locations[game.state.current_location].iter().position(|eid| *eid == id).unwrap();
-	// 				game.components.locations[game.state.current_location].remove(index);
-	// 				game.components.locations[game.components.inventory_id].push(id);
-	// 				// record change
-	// 			},
-	// 			ActionType::TALK => ()
-	// 			// _ => ()
-	// 		}
-	// 	}
-	// }
-
-	// let mut app = Window::new("hello world", 1920, 1080);
-
-	// app.set_color(255, 0, 255, 255);
-	// app.draw_rect(Rect::new(
-	// 	100,
-	// 	110,
-	// 	120,
-	// 	130,
-	// ));
-
-	// while app.next_frame() {}
-
-	// interface.init();
-
-	draw_text("Welcome", 10.0, 20.0, 18.0, GREEN);
 	game.setup_scene();
 	interface.render_detailed(&game);
 	interface.render_actions(&game);
 	loop {
-		// game.setup_scene();
+		// Reporting
+		if Instant::now() - lastsec >= Duration::from_secs(1) {
+            // println!("{:?}", game.state.state_changes);
+			lastsec = Instant::now();
+        }
+
 		interface.render(&game);
 
         next_frame().await;
@@ -120,9 +80,9 @@ async fn main() {
 								game.components.locations[game.state.current_location].remove(index);
 								game.components.locations[game.components.inventory_id].push(id);
 								// record change to world state
+								game.state.update_location(game.components.uuids[id], game.components.inventory_id);
 							},
 							ActionType::TALK => ()
-							// _ => ()
 						}
 
 						game.setup_scene();

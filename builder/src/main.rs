@@ -96,6 +96,13 @@ fn main() {
 		let index = *id_map.get(&id).unwrap();
 		let _ = file.write_all(
 			format!(
+				"\tcomponents.uuids[{}] = {};\n", 
+				index, 
+				id
+			).as_bytes()
+		);
+		let _ = file.write_all(
+			format!(
 				"\tcomponents.names[{}] = \"{}\";\n", 
 				index, 
 				str::replace(entity.name.unwrap().as_str(), "\"", "\\\"")
@@ -183,6 +190,7 @@ pub struct Components<'a> {{
 	pub people_start: usize,
 	pub inventory_id: usize,
 	pub takeable: [bool; {}],
+	pub uuids: [usize; {}],
 }}
 
 pub fn make_components<'a>() -> Components<'a> {{
@@ -196,6 +204,7 @@ pub fn make_components<'a>() -> Components<'a> {{
 		people_start: {},
 		inventory_id: {},
 		takeable: [false; {}],
+		uuids: [0; {}],
 	}};
 }}
 ", 
@@ -205,6 +214,7 @@ pub fn make_components<'a>() -> Components<'a> {{
 		locations.len(),
 		index,
 		items.len(),
+		index,
 
 		// Component init
 		index,
@@ -215,6 +225,7 @@ pub fn make_components<'a>() -> Components<'a> {{
 		items_start,
 		people_start,
 		id_map.get(&inventory_id).unwrap(),
-		items.len()
+		items.len(),
+		index,
 	).as_bytes());
 }

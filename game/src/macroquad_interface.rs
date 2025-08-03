@@ -48,7 +48,7 @@ impl MacroquadInterface {
 			if ch == 'q' {
 				return Err("quit");
 			} else {
-				let mut i: usize = <usize as TryInto<usize>>::try_into((ch as usize)).unwrap() - 1;
+				let i: usize = <usize as TryInto<usize>>::try_into((ch as usize)).unwrap() - 1;
 				if i > 47 && i - 48 < game.scene.actions.len() {
 					return Ok(Some(game.scene.actions[i - 48]));
 				}
