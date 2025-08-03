@@ -19,7 +19,7 @@ impl Game<'_> {
 				filter(|id| {
 					if *id < self.components.exits_start {
 						return false;
-					} 
+					}
 					self.components.destinations.contains(&(*id - self.components.exits_start))
 				}).
 				collect();
@@ -28,7 +28,7 @@ impl Game<'_> {
 				filter(|id| {
 					if *id < self.components.items_start || *id >= self.components.people_start {
 						return false;
-					} 
+					}
 					self.components.takeable[*id - self.components.items_start]
 				}).
 				collect();
@@ -39,8 +39,8 @@ impl Game<'_> {
 		for exit_id in &self.scene.exit_ids {
 			self.scene.actions.push(
 				Action{
-					action_type: ActionType::GO, 
-					arg_1: Some(*exit_id), 
+					action_type: ActionType::GO,
+					arg_1: Some(*exit_id),
 					..Default::default()
 				}
 			);
@@ -48,12 +48,36 @@ impl Game<'_> {
 		for item_id in &self.scene.takeable_item_ids {
 			self.scene.actions.push(
 				Action{
-					action_type: ActionType::TAKE, 
-					arg_1: Some(*item_id), 
+					action_type: ActionType::TAKE,
+					arg_1: Some(*item_id),
 					..Default::default()
 				}
 			);
 		}
 		self.scene.actions.push(Action{action_type: ActionType::CHECK_INVENTORY, ..Default::default()});
+	}
+
+	pub fn handle_action(&mut self, action: Action) {
+		self.state.last_action_type = action.action_type.clone();
+		match action.action_type {
+			ActionType::CHECK_INVENTORY => (),
+			ActionType::GO => {
+				self.state.current_location =
+					self.components.destinations[action.arg_1.unwrap() - self.components.exits_start]
+			},
+			ActionType::LOOK => (),
+			ActionType::TAKE => {
+				let id = action.arg_1.unwrap();
+				let index = self.components.locations[self.state.current_location].iter().position(|eid| *eid == id).unwrap();
+				self.components.locations[self.state.current_location].remove(index);
+				self.components.locations[self.components.inventory_id].push(id);
+				// record change to world state
+				self.state.update_location(self.components.uuids[id], self.components.inventory_id);
+			},
+			ActionType::TALK => ()
+		}
+
+		// reset the scene so list of actions updates
+		self.setup_scene();
 	}
 }

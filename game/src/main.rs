@@ -9,10 +9,6 @@ use chrono::Utc;
 
 mod action;
 use action::{Action, ActionType};
-mod interface;
-mod cli_interface;
-use interface::Interface;
-use cli_interface::CliInterface;
 mod macroquad_interface;
 use macroquad_interface::MacroquadInterface;
 
@@ -25,14 +21,14 @@ mod scene;
 use scene::Scene;
 mod state;
 use state::State;
+mod mode;
+use mode::Mode;
+mod main_menu_action;
+use main_menu_action::MainMenuAction;
 
 
 #[macroquad::main("MyGame")]
 async fn main() {
-// fn main() {
-	// let xdg_dirs = xdg::BaseDirectories::with_prefix("simpleRPG");
-
-
 	let mut interface = MacroquadInterface{
 		text: VecDeque::new()
 	};
@@ -52,12 +48,14 @@ async fn main() {
 		}
 	};
 	let mut lastsec = Instant::now();
+	let mut mode: Mode = Mode::MAIN_MENU;
+	change_mode(&mut mode, &mut game, &mut interface);
 
 	data::main::load_data(&mut game.components);
 
-	game.setup_scene();
-	interface.render_detailed(&game);
-	interface.render_actions(&game);
+	// game.setup_scene();
+	// interface.render_location_detailed(&game);
+	// interface.render_actions(&game);
 	loop {
 		// Reporting
 		if Instant::now() - lastsec >= Duration::from_secs(1) {
@@ -65,53 +63,71 @@ async fn main() {
 			lastsec = Instant::now();
         }
 
-		interface.render(&game);
+		// render
+		match mode {
+			Mode::MAIN_MENU => {
+				interface.render_main_menu();
 
-        next_frame().await;
-		match interface.check_input(&game) {
-			Ok(response) => {
-				match response {
-					Some(action) => {
-						game.state.last_action_type = action.action_type.clone();
-						match action.action_type {
-							ActionType::CHECK_INVENTORY => (),
-							ActionType::GO => {
-								game.state.current_location =
-									game.components.destinations[action.arg_1.unwrap() - game.components.exits_start]
-							},
-							ActionType::LOOK => interface.render_detailed(&game),
-							ActionType::TAKE => {
-								let id = action.arg_1.unwrap();
-								let index = game.components.locations[game.state.current_location].iter().position(|eid| *eid == id).unwrap();
-								game.components.locations[game.state.current_location].remove(index);
-								game.components.locations[game.components.inventory_id].push(id);
-								// record change to world state
-								game.state.update_location(game.components.uuids[id], game.components.inventory_id);
-							},
-							ActionType::TALK => ()
-						}
-
-						game.setup_scene();
-						interface.render_action_taken(&game, &action);
-						interface.render_actions(&game);
+				next_frame().await;
+				match interface.check_input_main_menu() {
+					Some(MainMenuAction::NEW_GAME) => {
+						mode = Mode::PLAY;
+						change_mode(&mut mode, &mut game, &mut interface);
+					},
+					Some(MainMenuAction::LOAD_GAME) => {},
+					Some(MainMenuAction::QUIT) => {
+						println!("Goodbye!");
+						break;
 					},
 					None => ()
 				}
 			},
-			Err(st) => {
-				match st {
-					GameAction::QUIT => {
-						println!("Goodbye!");
-						break;
+			Mode::PLAY => {
+				interface.render_play(&game);
+
+				next_frame().await;
+				match interface.check_input_play(&game) {
+					Ok(response) => {
+						match response {
+							Some(action) => {
+								game.handle_action(action);
+								interface.render_action_taken(&game, &action);
+								interface.render_actions(&game);
+							},
+							None => ()
+						}
 					},
-					GameAction::SAVE => {
-						save(&game);
-						interface.render_save();
+					Err(st) => {
+						match st {
+							GameAction::QUIT => {
+								println!("Goodbye!");
+								break;
+							},
+							GameAction::SAVE => {
+								save(&game);
+								interface.render_save();
+							}
+						}
 					}
 				}
 			}
 		}
     }
+}
+
+fn change_mode(mode: &Mode, game: &mut Game, interface: &mut MacroquadInterface) {
+	interface.change_mode(mode);
+	match *mode {
+		Mode::MAIN_MENU => {
+
+		},
+		Mode::PLAY => {
+			// load game somewhere else?
+			game.setup_scene();
+			interface.render_location_detailed(&game);
+			interface.render_actions(&game);
+		},
+	}
 }
 
 fn save(game: &Game) {
