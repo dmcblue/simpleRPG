@@ -6,11 +6,11 @@ pub trait Interface {
 
 	fn get_input(&self) -> String;
 
-	fn render(&self, game: &Game);
+	fn render(&mut self, game: &Game);
 
-	fn render_detailed(&self, game: &Game);
+	fn render_detailed(&mut self, game: &Game);
 
 	fn render_action(&self, game: &Game, action: &Action) -> String;
 
-	fn render_inventory(&self, game: &Game);
+	fn open_inventory(&mut self, game: &Game);
 }

@@ -6,6 +6,8 @@ use super::game::Game;
 pub struct CliInterface {}
 
 impl Interface for CliInterface {
+	fn init(&self) {}
+
 	fn get_input(&self) -> String{
 		let mut stdout = io::stdout();
 		let _ = stdout.write_all("> ".as_bytes());
@@ -18,7 +20,7 @@ impl Interface for CliInterface {
 		return input.trim().to_string();
 	}
 
-	fn render(&self, game: &Game) {
+	fn render(&mut self, game: &Game) {
 		if game.state.last_action_type == ActionType::GO {
 			println!("You are at {}", game.components.names[game.scene.location_id]);
 			println!("You see {}", game.components.descriptions[game.scene.location_id]);
@@ -33,7 +35,7 @@ impl Interface for CliInterface {
 		}
 	}
 
-	fn render_detailed(&self, game: &Game) {
+	fn render_detailed(&mut self, game: &Game) {
 		println!("You see {}", game.components.descriptions[game.scene.location_id]);
 		for entity_id in &game.scene.entity_ids {
 			println!("{}", game.components.descriptions[*entity_id]);
@@ -58,7 +60,7 @@ impl Interface for CliInterface {
 		}
 	}
 
-	fn render_inventory(&self, game: &Game) {
+	fn open_inventory(&mut self, game: &Game) {
 		println!("In your inventory:");
 		let entity_ids: Vec<usize> = game.components.locations[game.components.inventory_id].to_vec();
 		for entity_id in entity_ids {

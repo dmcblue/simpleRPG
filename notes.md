@@ -1,5 +1,14 @@
 # Notes
 
+## To DO
+- [ ] Conversations
+- [ ] State changes and saves
+- [ ] Design interface
+- [ ] Using Items
+- [ ] Quests 
+
+## General
+
 - You are in a location, what's there?
 	- Exits -> Items with movement triggers
 	- Items

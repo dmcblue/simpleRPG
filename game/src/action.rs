@@ -1,4 +1,4 @@
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Copy)]
 pub enum ActionType {
 	CHECK_INVENTORY,
 	GO,
@@ -7,6 +7,7 @@ pub enum ActionType {
 	TALK
 }
 
+#[derive(Clone, Copy)]
 pub struct Action {
 	pub action_type: ActionType,
 	pub arg_1: Option<usize>,
