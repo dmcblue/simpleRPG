@@ -7,6 +7,7 @@ use macroquad::{
 	ui::{hash, root_ui, widgets::InputText}
 };
 use std::collections::VecDeque;
+use super::game_action::GameAction;
 
 pub struct MacroquadInterface {
 	pub text: VecDeque<String>
@@ -38,10 +39,12 @@ impl MacroquadInterface {
 		);
 	}
 
-	pub fn check_input(&self, game: &Game) -> Result<Option<Action>, &str> {
+	pub fn check_input(&self, game: &Game) -> Result<Option<Action>, GameAction> {
 		if let Some(ch) = get_char_pressed() {
 			if ch == 'q' {
-				return Err("quit");
+				return Err(GameAction::QUIT);
+			} else if ch == 's' {
+				return Err(GameAction::SAVE);
 			} else {
 				let i: usize = <usize as TryInto<usize>>::try_into((ch as usize)).unwrap() - 1;
 				if i > 47 && i - 48 < game.scene.actions.len() {
@@ -89,6 +92,10 @@ impl MacroquadInterface {
 			action_id = action_id + 1;
 		}
 	}
+
+	pub fn render_save(&mut self) {
+		self.println(String::from("Game saved."))
+	}
 }
 
 impl Interface for MacroquadInterface {
@@ -110,7 +117,7 @@ impl Interface for MacroquadInterface {
 		}
 
 		
-		draw_text("(q)uit", 10.0, screen_height() - 20.0, 18.0, BLUE);
+		draw_text("(q)uit | (s)ave", 10.0, screen_height() - 20.0, 18.0, BLUE);
 	}
 
 	fn render_detailed(&mut self, game: &Game) {

@@ -4,5 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+chrono = "0.4.41"
 macroquad = "0.4.14"
 simple = "0.3.0"
+xdg = "3.0.0"

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use super::action::ActionType;
 
-#[derive(Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Field {
 	LOCATION
 }
@@ -12,7 +12,17 @@ impl TryFrom<&str> for Field {
     fn try_from(value: &str) -> Result<Self, Self::Error> {
 		match value {
 			"location" => Ok(Field::LOCATION),
-			_ => Err("Unknown fields")
+			_ => Err("Unknown field")
+		}
+    }
+}
+
+impl TryFrom<Field> for &str {
+    type Error = &'static str;
+
+    fn try_from(value: Field) -> Result<Self, Self::Error> {
+		match value {
+			Field::LOCATION => Ok("location")
 		}
     }
 }
@@ -24,6 +34,19 @@ pub struct State {
 }
 
 impl State {
+	pub fn state_changes_to_file_content(&self) -> String {
+		let mut contents = String::new();
+		for (entity_uuid, changes) in self.state_changes.iter() {
+			contents.push_str(format!("{}", entity_uuid).as_str());
+			for (field, value) in changes {
+				contents.push_str(format!(";{}:{}", <Field as TryInto<&str>>::try_into(*field).unwrap(), value).as_str());
+			}
+			contents.push_str("\n");
+		}
+
+		return contents;
+	}
+
 	pub fn update_location(&mut self, entity_uuid: usize, new_value: usize) {
 		// let key = format!("{}:{}", entity_uuid, Field::LOCATION.try_into(&str))
 		if !self.state_changes.contains_key(&entity_uuid) {

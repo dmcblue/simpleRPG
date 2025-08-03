@@ -1,9 +1,11 @@
 use std::io::{self, Write};
+use std::fs::{File};
 use std::collections::HashMap;
 // use simple::{Rect, Window};
 use macroquad::prelude::*;
 use std::collections::VecDeque;
 use std::time::{Instant, Duration};
+use chrono::Utc;
 
 mod action;
 use action::{Action, ActionType};
@@ -17,6 +19,8 @@ use macroquad_interface::MacroquadInterface;
 mod data;
 mod game;
 use game::Game;
+mod game_action;
+use game_action::GameAction;
 mod scene;
 use scene::Scene;
 mod state;
@@ -26,7 +30,9 @@ use state::State;
 #[macroquad::main("MyGame")]
 async fn main() {
 // fn main() {
-	// let interface = CliInterface{};
+	// let xdg_dirs = xdg::BaseDirectories::with_prefix("simpleRPG");
+
+
 	let mut interface = MacroquadInterface{
 		text: VecDeque::new()
 	};
@@ -70,7 +76,7 @@ async fn main() {
 						match action.action_type {
 							ActionType::CHECK_INVENTORY => (),
 							ActionType::GO => {
-								game.state.current_location = 
+								game.state.current_location =
 									game.components.destinations[action.arg_1.unwrap() - game.components.exits_start]
 							},
 							ActionType::LOOK => interface.render_detailed(&game),
@@ -93,9 +99,30 @@ async fn main() {
 				}
 			},
 			Err(st) => {
-				println!("Goodbye!");
-				break;
+				match st {
+					GameAction::QUIT => {
+						println!("Goodbye!");
+						break;
+					},
+					GameAction::SAVE => {
+						save(&game);
+						interface.render_save();
+					}
+				}
 			}
 		}
     }
+}
+
+fn save(game: &Game) {
+	let time = Utc::now();
+	let xdg_dirs = xdg::BaseDirectories::with_prefix("simpleRPG");
+	let save_path = xdg_dirs.place_data_file(format!("{}.sv", time.timestamp())).unwrap();
+
+	match File::create(save_path) {
+		Ok(save_file) => {
+			write!(&save_file, "{}", game.state.state_changes_to_file_content());
+		},
+		Err(e) => { println!("{:?}", e); }
+	}
 }
