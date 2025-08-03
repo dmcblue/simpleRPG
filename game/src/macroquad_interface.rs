@@ -19,12 +19,7 @@ impl MacroquadInterface {
 			let _ = self.text.pop_front();
 		}
 	}
-	// fn println(&self, s: &str) {
-	// 	self.text.push_back(s);
-	// 	while self.text.len() > 10 {
-	// 		let _ = self.text.pop_front();
-	// 	}
-	// }
+
 	fn draw_editor(&self) {
 		let mut data = String::new();
 
@@ -76,7 +71,6 @@ impl MacroquadInterface {
 				for entity_id in &game.scene.entity_ids {
 					self.println(format!("{}", game.components.names[*entity_id]));
 				}
-				// self.println(format!("Go to {}", game.components.names[action.arg_1.unwrap()]));
 			}
 			ActionType::LOOK => self.render_detailed(game),
 			ActionType::TAKE => {
@@ -103,60 +97,20 @@ impl Interface for MacroquadInterface {
 	}
 
 	fn get_input(&self) -> String{
-		// let mut i: f32 = 0.0;
-		// // for key in get_keys_pressed() {
-		// if let Some(key) = get_last_key_pressed() {
-		// 	draw_text(format!("{:?}", key).as_str(), 10.0, 200.0 + (20.0 * i), 18.0, RED);
-		// 	// i = i + 1.0;
-		// }
-		// let mut stdout = io::stdout();
-		// let _ = stdout.write_all("> ".as_bytes());
-		// let _ = stdout.flush();
-		// let mut input = String::new();
-		// match io::stdin().read_line(&mut input) {
-		// 	Ok(_goes_into_input_above) => {},
-		// 	Err(_no_updates_is_fine) => {},
-		// }
-		// return input.trim().to_string();
-		let mut data = String::new();
-
-		let window_id = hash!();
-		root_ui().window(
-			window_id,
-			vec2(0.0, 200.0),
-			vec2(screen_width(), 230.0),
-			|ui| {
-				let input_text_id = hash!();
-				InputText::new(input_text_id)
-					.label("")
-					.size(vec2(screen_width() - 4.0, 30.0 - 4.0))
-					.ui(ui, &mut data);
-			},
-		);
-		return data;
+		return String::new();
 	}
 
 	fn render(&mut self, game: &Game) {
 		clear_background(BLACK);
-		// if game.state.last_action_type == ActionType::GO {
-		// 	self.println(format!("You are at {}", game.components.names[game.scene.location_id]));
-		// 	self.println(format!("You see {}", game.components.descriptions[game.scene.location_id]));
-		// 	for entity_id in &game.scene.entity_ids {
-		// 		self.println(format!("{}", game.components.names[*entity_id]));
-		// 	}
-		// }
-		// let mut action_id: usize = 1;
-		// for action in game.scene.actions.iter() {
-		// 	self.println(format!("{}. {}", action_id, self.render_action(&game, &action)));
-		// 	action_id = action_id + 1;
-		// }
 
 		let mut i: f32 = 0.0;
 		for line in self.text.iter() {
 			draw_text(line.as_str(), 10.0, 20.0 + (20.0 * i), 18.0, GREEN);
 			i = i + 1.0;
 		}
-		// self.draw_editor();
+
+		
+		draw_text("(q)uit", 10.0, screen_height() - 20.0, 18.0, BLUE);
 	}
 
 	fn render_detailed(&mut self, game: &Game) {
@@ -185,10 +139,6 @@ impl Interface for MacroquadInterface {
 	}
 
 	fn open_inventory(&mut self, game: &Game) {
-		// self.println(String::from("In your inventory:"));
-		// let entity_ids: Vec<usize> = game.components.locations[game.components.inventory_id].to_vec();
-		// for entity_id in entity_ids {
-		// 	self.println(format!("{}", game.components.names[entity_id]));
-		// }
+		
 	}
 }
