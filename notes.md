@@ -2,6 +2,9 @@
 
 ## To DO
 - [ ] Conversations
+- [ ] In game editor
+	- [ ] Editor actions as subset of Game Actions
+	- [ ] In build, double array lengths to allow editing in app (in edit mode)
 - [x] State changes and saves
 - [ ] Design interface
 - [ ] Using Items

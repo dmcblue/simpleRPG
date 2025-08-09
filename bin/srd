@@ -37,7 +37,7 @@ get_id() (
 HELP_OPTIONS=("help" "--help" "-h")
 
 command=$1
-if containsElement "$command" "${HELP_OPTIONS[@]}"; then
+if $(containsElement "$command" "${HELP_OPTIONS[@]}"); then
 	help
 elif [[ "$command" == "make" ]]; then
 	next_id=$(get_id)
@@ -47,7 +47,15 @@ elif [[ "$command" == "make" ]]; then
 	fi
 	template_file="$TEMPLATES_DIR/$template_kind.yml"
 	if [[ -f "$template_file" ]]; then
-		sed "s/\$SRD_ID/$next_id/" $template_file > "$DATA_DIR/$next_id.yml"
+		FILE_NAME="$DATA_DIR/$next_id.yml"
+		sed "s/\$SRD_ID0/$next_id/" $template_file > $FILE_NAME
+		if [[ "$template_kind" == "conversation" ]]; then
+			id=$(($next_id))
+			id=$(($id+1))
+			sed -i "s/\$SRD_ID1/$id/" $FILE_NAME
+			id=$(($id+1))
+			sed -i "s/\$SRD_ID2/$id/" $FILE_NAME
+		fi
 		echo "$DATA_DIR/$next_id.yml"
 	else
 		error "No type '$template_kind'"

@@ -1,0 +1,17 @@
+metaname: ""
+metadata: []
+id: $SRD_ID0
+type: "Conversation"
+speaker: 0
+prompts:
+  - id: $SRD_ID1
+    prompt: ""
+    response: ""
+    after: null
+    enabled: true
+    prompts:
+      - id: $SRD_ID2
+        prompt: ""
+        response: ""
+        after: null
+        enabled: true
