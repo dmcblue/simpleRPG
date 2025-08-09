@@ -71,6 +71,7 @@ impl Game<'_> {
 				let index = self.components.locations[self.state.current_location].iter().position(|eid| *eid == id).unwrap();
 				self.components.locations[self.state.current_location].remove(index);
 				self.components.locations[self.components.inventory_id].push(id);
+				self.components.location_map[self.components.inventory_id] = id;
 				// record change to world state
 				self.state.update_location(self.components.uuids[id], self.components.inventory_id);
 			},

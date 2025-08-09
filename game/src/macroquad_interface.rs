@@ -1,23 +1,45 @@
-use std::io::{self, Write};
+#[warn(non_shorthand_field_patterns)]
+use std::collections::HashSet;
+use std::mem::ManuallyDrop;
 use super::action::{Action, ActionType};
 use super::game::Game;
 use macroquad::{
 	prelude::*,
-	ui::{hash, root_ui, widgets::InputText}
 };
 use std::collections::VecDeque;
 use super::game_action::GameAction;
-use super::mode::Mode;
-use super::main_menu_action::MainMenuAction;
+use super::mode::{Mode};
+use super::main_menu_action::{MainMenuAction};
+use super::constants::{key_to_char, NUMBERS, TYPEABLE};
+
+struct Theme {
+	input_background: Color,
+}
 
 pub struct MacroquadInterface {
-	pub text: VecDeque<String>
+	input_buffer: String,
+	text: VecDeque<String>,
+	numbers: HashSet<KeyCode>,
+	theme: Theme,
+	typeable: HashSet<KeyCode>,
 }
 
 impl MacroquadInterface {
+	pub fn new() -> MacroquadInterface {
+		Self {
+			input_buffer: String::new(),
+			text: VecDeque::new(),
+			numbers: HashSet::from(NUMBERS),
+			theme: Theme{
+				input_background: Color::new(0.8, 0.8, 0.8, 1.00),
+			},
+			typeable: HashSet::from(TYPEABLE),
+		}
+	}
+
 	// private
 
-	// clear...something. Need name
+	// clear...something. Need better name
 	fn clear(&mut self) {
 		while self.text.len() > 0 {
 			let _ = self.text.pop_front();
@@ -39,13 +61,43 @@ impl MacroquadInterface {
 	pub fn change_mode(&mut self, mode: &Mode) {
 		self.clear();
 		match *mode {
+			Mode::LOAD => {
+				self.input_buffer = String::new();
+			},
 			Mode::MAIN_MENU => {
 				self.println_str("(N)ew Game");
 				self.println_str("(L)oad Game");
 				self.println_str("(Q)uit");
 			},
-			Mode::PLAY => {}
+			Mode::PLAY => {},
+			Mode::SAVE => {
+				self.input_buffer = String::new();
+			}
 		}
+	}
+
+	pub fn check_input_load(&mut self) -> Option<isize> {
+		let key_set = get_keys_released();
+		if key_set.contains(&KeyCode::Escape) {
+			return Some(-1);
+		} else if key_set.contains(&KeyCode::Enter) {
+			match self.input_buffer.parse::<isize>() {
+				Ok(index) => { return Some(index) },
+				Err(_) => { self.error(&Mode::LOAD, "Bad file index 2"); },
+			}
+		} else {
+			let diff: HashSet<_> = key_set.intersection(&self.numbers).collect();
+			for key in diff {
+				match NUMBERS.iter().position(|&r| r == *key) {
+					Some(index) => {
+						self.input_buffer.push_str(format!("{}", index).as_str());
+					},
+					None => {}
+				}
+			}
+		}
+
+		return None;
 	}
 
 	pub fn check_input_main_menu(&self) -> Option<MainMenuAction> {
@@ -62,23 +114,62 @@ impl MacroquadInterface {
 	}
 
 	pub fn check_input_play(&self, game: &Game) -> Result<Option<Action>, GameAction> {
-		if let Some(ch) = get_char_pressed() {
-			if ch == 'q' {
-				// add some 'game not saved' check
-				// or put a menu to save
-				// maybe this should say: go to main menu
-				return Err(GameAction::QUIT);
-			} else if ch == 's' {
-				return Err(GameAction::SAVE);
-			} else {
-				let i: usize = <usize as TryInto<usize>>::try_into((ch as usize)).unwrap() - 1;
-				if i > 47 && i - 48 < game.scene.actions.len() {
-					return Ok(Some(game.scene.actions[i - 48]));
+		let key_set = get_keys_released();
+
+		if key_set.contains(&KeyCode::Q) {
+			// add some 'game not saved' check
+			// or put a menu to save
+			// maybe this should say: go to main menu
+			return Err(GameAction::QUIT);
+		} else if key_set.contains(&KeyCode::S) {
+			return Err(GameAction::SAVE);
+		} else {
+			let diff: HashSet<&KeyCode> = key_set.intersection(&self.numbers).collect();
+			for key in diff.iter() {
+				match TYPEABLE.iter().position(|&r| r == **key) {
+					Some(pos) => {
+						return Ok(Some(game.scene.actions[pos - 1]));
+					},
+					None => {}
 				}
 			}
 		}
 
 		return Ok(None);
+	}
+
+	pub fn check_input_save(&mut self) -> Option<String> {
+		let key_set = get_keys_released();
+
+		if key_set.contains(&KeyCode::Enter) {
+			return Some(self.input_buffer.clone());
+		} else if key_set.contains(&KeyCode::Backspace) {
+			self.input_buffer.pop();
+		} else {
+			let diff: HashSet<&KeyCode> = key_set.intersection(&self.typeable).collect();
+			for key in diff.iter() {
+				match TYPEABLE.iter().position(|&r| r == **key) {
+					Some(_) => {
+						self.input_buffer.push_str(format!("{}", key_to_char(**key as KeyCode)).as_str());
+					},
+					None => {}
+				}
+			}
+		}
+
+		return None;
+	}
+
+	pub fn error(&mut self, mode: &Mode, err_str: &str) {
+		println!("{}", err_str);
+		match mode {
+			Mode::LOAD => {
+				self.input_buffer = String::new();
+			},
+			Mode::MAIN_MENU => {},
+			Mode::PLAY => {},
+			Mode::SAVE => {},
+		}
 	}
 
 	pub fn render_action(&self, game: &Game, action: &Action) -> String {
@@ -136,6 +227,19 @@ impl MacroquadInterface {
 		}
 	}
 
+	pub fn render_load(&mut self) {
+		clear_background(BLACK);
+
+		let mut i: f32 = 0.0;
+		for line in self.text.iter() {
+			draw_text(line, 10.0, 20.0 + (20.0 * i), 18.0, GREEN);
+			i = i + 1.0;
+		}
+
+		draw_rectangle(0.0, screen_height() - 30.0, screen_width(), screen_height(), self.theme.input_background);
+		draw_text(self.input_buffer.as_str(), 10.0, screen_height() - 15.0, 20.0, BLACK);
+	}
+
 	pub fn render_location_detailed(&mut self, game: &Game) {
 		self.println(format!("You see {}", game.components.descriptions[game.scene.location_id]));
 		for entity_id in &game.scene.entity_ids {
@@ -153,11 +257,7 @@ impl MacroquadInterface {
 		}
 	}
 
-	pub fn render_save(&mut self) {
-		self.println(String::from("Game saved."))
-	}
-
-	pub fn render_play(&mut self, game: &Game) {
+	pub fn render_play(&mut self) {
 		clear_background(BLACK);
 
 		let mut i: f32 = 0.0;
@@ -168,5 +268,25 @@ impl MacroquadInterface {
 
 
 		draw_text("(q)uit | (s)ave", 10.0, screen_height() - 20.0, 18.0, BLUE);
+	}
+
+	pub fn render_save(&mut self) {
+		clear_background(BLACK);
+		draw_text("Name your save:", 10.0, 15.0, 20.0, GREEN);
+		draw_rectangle(0.0, screen_height() - 30.0, screen_width(), screen_height(), self.theme.input_background);
+		draw_text(self.input_buffer.as_str(), 10.0, screen_height() - 15.0, 20.0, BLACK);
+	}
+
+	pub fn render_save_files(&mut self, file_names: Vec<String>) {
+		let mut i: usize = 1;
+		for file_name in file_names {
+			self.println(format!("{}. {}", i, file_name));
+			i = i + 1;
+		}
+		self.println(String::from("(esc) to cancel"));
+	}
+
+	pub fn render_saved(&mut self) {
+		self.println(String::from("Game saved."));
 	}
 }

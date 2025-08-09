@@ -2,10 +2,11 @@
 
 ## To DO
 - [ ] Conversations
-- [ ] State changes and saves
+- [x] State changes and saves
 - [ ] Design interface
 - [ ] Using Items
-- [ ] Quests 
+- [ ] Quests
+- [ ] Fonts
 
 ## General
 

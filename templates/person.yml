@@ -5,5 +5,5 @@ type: "Person"
 name: ""
 description: |
   ""
-starting_location: 0
+location: 0
 # moves: true

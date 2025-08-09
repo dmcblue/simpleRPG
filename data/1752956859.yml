@@ -1,5 +1,5 @@
 metaname: "Tavern Bar Tender"
-metadata: 
+metadata:
   - "Tavern"
 id: 1752956859
 type: "Person"
@@ -7,5 +7,5 @@ name: "Smithy Joe"
 description: |
   A built, bald man stands behind the bar.
   He smiles under his broad moustache while cleaning a beerstein
-starting_location: 1752956389
+location: 1752956389
 # moves: true

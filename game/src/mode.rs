@@ -1,4 +1,6 @@
 pub enum Mode {
+	LOAD,
 	MAIN_MENU,
-	PLAY
+	PLAY,
+	SAVE
 }

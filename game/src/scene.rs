@@ -1,4 +1,4 @@
-use super::action::{Action, ActionType};
+use super::action::{Action};
 
 pub struct Scene {
 	pub location_id: usize,
