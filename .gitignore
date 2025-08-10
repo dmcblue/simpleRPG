@@ -4,6 +4,7 @@
 # Build
 /game/src/data/main.rs
 /game/src/data/components.rs
+/game/src/data/conversations.rs
 
 # Added by cargo
 

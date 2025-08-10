@@ -8,12 +8,13 @@ prompts:
     id: 1754762621
     prompt: "Ask about Bar Tender"
     response: "My names Tian."
-    after: null
+    # after: null
     enabled: true
     prompts:
       -
         id: 1754762622
         prompt: "Tian is an interesting name"
         response: "It French!"
-        after: null
+        # after: null
         enabled: true
+        prompts: []
