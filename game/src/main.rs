@@ -1,42 +1,42 @@
-use std::io::{Write};
-use std::env;
-use std::fs::{File, read_dir, read_to_string};
-use std::collections::HashMap;
-use macroquad::prelude::*;
-use std::time::{Instant, Duration};
-use chrono::Utc;
-
 mod action;
-use action::{ActionType};
-mod macroquad_interface;
-use macroquad_interface::{
-	MacroquadInterface,
-};
-
 mod app_data;
-use app_data::AppData;
-mod data;
-use data::Components;
-mod game;
-use game::Game;
-mod game_action;
-use game_action::GameAction;
-mod scene;
-use scene::Scene;
-mod state;
-use state::{Field, State};
-mod mode;
-use mode::Mode;
-mod main_menu_action;
-use main_menu_action::MainMenuAction;
 mod constants;
+mod data;
+mod game;
+mod game_action;
+mod interface;
+mod interface_input;
+mod interface_render;
+mod main_menu_action;
+mod mode;
+mod scene;
+mod state;
+
+// std
+use std::fs::{File, read_to_string};
+use std::io::{Write};
+use std::time::{Instant, Duration};
+
+// ext
+use chrono::Utc;
+use macroquad::prelude::*;
+
+// int
+use app_data::AppData;
+use data::Components;
+use game::Game;
+use game_action::GameAction;
+use interface::Interface;
+use main_menu_action::MainMenuAction;
+use mode::Mode;
+use state::{Field, State};
 
 #[macroquad::main("MyGame")]
 async fn main() {
 	let mut app_data: AppData = AppData::new();
 	app_data.load();
 
-	let mut interface = MacroquadInterface::new();
+	let mut interface = Interface::new();
 	let mut game: Game = Game::new();
 	let mut lastsec = Instant::now();
 	let mut mode: Mode = Mode::MAIN_MENU;
@@ -155,7 +155,7 @@ async fn main() {
     }
 }
 
-fn change_mode(mode: &Mode, app_data: &mut AppData, game: &mut Game, interface: &mut MacroquadInterface) {
+fn change_mode(mode: &Mode, app_data: &mut AppData, game: &mut Game, interface: &mut Interface) {
 	interface.change_mode(mode);
 	match *mode {
 		Mode::LOAD => {

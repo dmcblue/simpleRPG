@@ -1,5 +1,5 @@
 use std::env;
-use std::fs::{File, read_dir, read_to_string};
+use std::fs::{read_dir};
 
 pub struct AppData {
 	directory_separator: String,
