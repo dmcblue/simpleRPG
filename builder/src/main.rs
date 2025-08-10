@@ -1,12 +1,21 @@
+// std
 use std::fs;
 use std::fs::File;
 use std::io::Write;
 use std::collections::HashMap;
 use std::clone::Clone;
-// use std::collections::VecDeque;
 
+// ext
 use serde::{Serialize, Deserialize};
 use serde_yml;
+
+// int
+mod components;
+use components::{write_components_file};
+
+mod counts;
+use counts::Counts;
+
 
 const ENTITY_TYPE_CONVERSATION: &str = "Conversation";
 const ENTITY_TYPE_EXIT: &str = "Exit";
@@ -75,68 +84,64 @@ fn main() {
 		pub fn load_conversations(components: &mut Components) {\n\
 		\tcomponents.conversations = [\n"
 	);
-	let mut start_id: usize = 0;
-	let mut conversations: Vec<usize> = Vec::new();
-	let mut exits: Vec<usize> = Vec::new();
-	let mut items: Vec<usize> = Vec::new();
-	let mut locations: Vec<usize> = Vec::new();
-	let mut people: Vec<usize> = Vec::new();
+	let mut counts: Counts = Counts::new();
 	let mut entities: HashMap<usize, Entity> = HashMap::new();
-	let mut inventory_id: usize = 0;
+
 	for path in paths {
 		let file_path = path.unwrap().path();
 		let contents = fs::read_to_string(file_path).unwrap();
 		let entity: Entity = serde_yml::from_str(&contents).unwrap();
 
 		if entity.entity_type == "Game" {
-			start_id = entity.location.unwrap();
+			counts.starting_location_id = entity.location.unwrap();
 		} else {
 			let id: usize = entity.id.unwrap();
 			match entity.entity_type.as_str() {
-				ENTITY_TYPE_CONVERSATION => { conversations.push(id); },
-				ENTITY_TYPE_EXIT => { exits.push(id); },
-				ENTITY_TYPE_ITEM => { items.push(id); },
-				ENTITY_TYPE_LOCATION => { locations.push(id); },
-				ENTITY_TYPE_PERSON => { people.push(id); },
+				ENTITY_TYPE_CONVERSATION => { counts.conversations.push(id); },
+				ENTITY_TYPE_EXIT => { counts.exits.push(id); },
+				ENTITY_TYPE_ITEM => { counts.items.push(id); },
+				ENTITY_TYPE_LOCATION => { counts.locations.push(id); },
+				ENTITY_TYPE_PERSON => { counts.people.push(id); },
 				_ => ()
 			}
 			if entity.metaname == "Inventory" {
-				inventory_id = id;
+				counts.inventory_uuid = id;
 			}
 			entities.insert(id, entity);
 		}
 	}
-	let mut index: usize = 0;
+
+	// uuid to array id
 	let mut id_map: HashMap<usize, usize> = HashMap::new();
 
-	for entity_id in locations.iter() {
-		id_map.insert(*entity_id, index);
-		index = index + 1;
+	for entity_id in counts.locations.iter() {
+		id_map.insert(*entity_id, counts.total);
+		counts.total = counts.total + 1;
 	}
-	let items_start = index;
-	for entity_id in items.iter() {
-		id_map.insert(*entity_id, index);
-		index = index + 1;
+	counts.items_start = counts.total;
+	for entity_id in counts.items.iter() {
+		id_map.insert(*entity_id, counts.total);
+		counts.total = counts.total + 1;
 	}
-	let people_start = index;
-	for entity_id in people.iter() {
-		id_map.insert(*entity_id, index);
-		index = index + 1;
+	counts.people_start = counts.total;
+	for entity_id in counts.people.iter() {
+		id_map.insert(*entity_id, counts.total);
+		counts.total = counts.total + 1;
 	}
-	let exits_start = index;
-	for entity_id in exits.iter() {
-		id_map.insert(*entity_id, index);
-		index = index + 1;
+	counts.exits_start = counts.total;
+	for entity_id in counts.exits.iter() {
+		id_map.insert(*entity_id, counts.total);
+		counts.total = counts.total + 1;
 	}
-	let conversations_start = index;
-	for entity_id in conversations.iter() {
-		id_map.insert(*entity_id, index);
-		index = index + 1;
+	counts.conversations_start = counts.total;
+	for entity_id in counts.conversations.iter() {
+		id_map.insert(*entity_id, counts.total);
+		counts.total = counts.total + 1;
 	}
 	for (id, entity) in entities {
 		let array_index = *id_map.get(&id).unwrap();
 		// all non-conversations
-		if array_index < conversations_start {
+		if array_index < counts.conversations_start {
 			let _ = file.write_all(
 				format!(
 					"\tcomponents.uuids[{}] = {};\n",
@@ -160,7 +165,7 @@ fn main() {
 			);
 
 			// non-locations
-			if array_index >= items_start {
+			if array_index >= counts.items_start {
 				let _ = file.write_all(
 					format!(
 						"\tcomponents.locations[{}].push({});\n",
@@ -179,7 +184,7 @@ fn main() {
 		}
 
 		// conversations only
-		if array_index >= conversations_start {
+		if array_index >= counts.conversations_start {
 			let _ = file.write_all(
 				format!(
 					"\tcomponents.owns_conversation[{}] = {};\n",
@@ -196,7 +201,7 @@ fn main() {
 					id
 				).as_bytes()
 			);
-			let mut stack: Vec<ConversationNode> = Vec::new();
+			// let mut stack: Vec<ConversationNode> = Vec::new();
 			for conversation in entity.prompts.unwrap() {
 				// needs to be iterative to not be awful
 				render_conversation(
@@ -210,25 +215,25 @@ fn main() {
 			);
 		}
 		// exits only
-		else if array_index >= exits_start {
+		else if array_index >= counts.exits_start {
 			let _ = file.write_all(
 				format!(
 					"\tcomponents.destinations[{}] = {};\n",
-					array_index - exits_start,
+					array_index - counts.exits_start,
 					id_map.get(&entity.to.unwrap()).unwrap()
 				).as_bytes()
 			);
 		}
 		// people only
-		else if array_index >= people_start {
+		else if array_index >= counts.people_start {
 
 		}
 		// items only
-		else if array_index >= items_start {
+		else if array_index >= counts.items_start {
 			let _ = file.write_all(
 				format!(
 					"\tcomponents.takeable[{}] = {};\n",
-					array_index - items_start,
+					array_index - counts.items_start,
 					&entity.takeable.unwrap()
 				).as_bytes()
 			);
@@ -242,85 +247,13 @@ fn main() {
 		b"\t];\n}\n"
 	);
 
-	let _ = file.write_all(format!("}}\n\npub fn get_start_location_id() -> usize {{ {} }}", id_map.get(&start_id).unwrap()).as_bytes());
-	let mut file = File::create("../game/src/data/components.rs").unwrap();
-	let _ = file.write_all(format!("
-use super::conversations::{{ConversationRoot, ConversationNode}};
-
-pub struct Components<'a> {{
-	pub conversations: [ConversationRoot; {}],
-	pub descriptions: [&'a str; {}],
-	pub destinations: [usize; {}],
-	pub enabled: [bool; {}],
-	pub location_map: [usize; {}],
-	pub locations: [Vec<usize>; {}],
-	pub names: [&'a str; {}],
-	pub owns_conversation: [usize; {}],
-	pub exits_start: usize,
-	pub items_start: usize,
-	pub people_start: usize,
-	pub inventory_id: usize,
-	pub takeable: [bool; {}],
-	pub uuids: [usize; {}],
-}}
-
-pub fn make_components<'a>() -> Components<'a> {{
-	return Components {{
-		conversations: [ConversationRoot::new(); {}],
-		descriptions: [\"\"; {}],
-		destinations: [0; {}],
-		enabled: [false; {}],
-		location_map: [0; {}],
-		locations: [(); {}].map(|_| Vec::new()),
-		names: [\"\"; {}],
-		owns_conversation: [0; {}],
-		exits_start: {},
-		items_start: {},
-		people_start: {},
-		inventory_id: {},
-		takeable: [false; {}],
-		uuids: [0; {}],
-	}};
-}}
-
-impl Components<'_> {{
-	pub fn move_to(&mut self, entity_uuid: usize, new_location_id: usize) {{
-		let starting_location_id = self.location_map[entity_uuid];
-		let index = self.locations[starting_location_id].iter().position(|eid| *eid == entity_uuid).unwrap();
-		self.locations[starting_location_id].remove(index);
-		self.location_map[entity_uuid] = new_location_id;
-		self.locations[new_location_id].push(entity_uuid);
-	}}
-}}
-",
-		// Component Struct Definition
-		index - conversations_start, // conversations
-		index, // descriptions
-		exits.len(), // destinations
-		index - conversations_start, // enabled
-		index, // location_map
-		locations.len(), // locations
-		index, // names
-		index, // owns_conversation
-		items.len(), // takeable
-		index, // uuids
-
-		// Component init
-		index - conversations_start, // conversations
-		index, // descriptions
-		exits.len(), // destinations
-		index - conversations_start, // enabled
-		index, // location_map
-		locations.len(), // locations
-		index, // names
-		index, // owns_conversation
-		exits_start, // exists start
-		items_start, // items_start
-		people_start, // people_start
-		id_map.get(&inventory_id).unwrap(), // intentory_id
-		items.len(), // takeable
-		index, // uuids
-	).as_bytes());
+	let _ = file.write_all(
+		format!(
+			"}}\n\npub fn get_start_location_id() -> usize {{ {} }}",
+			id_map.get(&counts.starting_location_id).unwrap()
+		).as_bytes()
+	);
+	write_components_file(&counts, *id_map.get(&counts.inventory_uuid).unwrap());
 }
 
 fn render_conversation(
