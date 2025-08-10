@@ -1,5 +1,11 @@
+use std::collections::HashMap;
+
 use super::state::State;
-use super::data::Components;
+use super::data::{
+	Components,
+	make_components,
+};
+use super::data::main::get_start_location_id;
 use super::scene::Scene;
 use super::action::{Action, ActionType};
 
@@ -10,6 +16,24 @@ pub struct Game<'a> {
 }
 
 impl Game<'_> {
+	pub fn new() -> Self {
+		Game {
+			components: make_components(),
+			scene: Scene{
+				location_id: 0,
+				entity_ids: Vec::new(),
+				exit_ids: Vec::new(),
+				takeable_item_ids: Vec::new(),
+				actions: Vec::new(),
+			},
+			state: State {
+				current_location: get_start_location_id(),
+				last_action_type: ActionType::GO,
+				state_changes: HashMap::new()
+			}
+		}
+	}
+
 	pub fn setup_scene(&mut self) {
 		let entity_ids: Vec<usize> = self.components.locations[self.state.current_location].to_vec();
 		self.scene.location_id = self.state.current_location;

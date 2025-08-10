@@ -37,21 +37,7 @@ async fn main() {
 	app_data.load();
 
 	let mut interface = MacroquadInterface::new();
-	let mut game = Game {
-		components: data::make_components(),
-		scene: Scene{
-			location_id: 0,
-			entity_ids: Vec::new(),
-			exit_ids: Vec::new(),
-			takeable_item_ids: Vec::new(),
-			actions: Vec::new(),
-		},
-		state: State {
-			current_location: data::main::get_start_location_id(),
-			last_action_type: ActionType::GO,
-			state_changes: HashMap::new()
-		}
-	};
+	let mut game: Game = Game::new();
 	let mut lastsec = Instant::now();
 	let mut mode: Mode = Mode::MAIN_MENU;
 	change_mode(&mut mode, &mut app_data, &mut game, &mut interface);
