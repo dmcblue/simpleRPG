@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use super::action::ActionType;
 use super::data::Components;
+use super::data::ConversationNode;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Field {
@@ -28,8 +29,14 @@ impl TryFrom<Field> for &str {
     }
 }
 
+pub struct ConversationPointer {
+	pub conversation_id: usize,
+	pub path: Vec<usize>,
+}
+
 pub struct State {
-	pub current_location: usize,
+	pub current_conversation: ConversationPointer,
+	pub current_location_id: usize,
 	pub last_action_type: ActionType,
 	pub state_changes: HashMap<usize, HashMap<Field, usize>>, // what about strings?
 }
@@ -38,7 +45,7 @@ impl State {
 	pub fn state_changes_to_file_content(&self, name: String) -> String {
 		let mut contents = String::new();
 		contents.push_str(format!("{}\n", name).as_str());
-		contents.push_str(format!("{}\n", self.current_location).as_str());
+		contents.push_str(format!("{}\n", self.current_location_id).as_str());
 		for (entity_uuid, changes) in self.state_changes.iter() {
 			contents.push_str(format!("{}", entity_uuid).as_str());
 			for (field, value) in changes {
@@ -55,7 +62,7 @@ impl State {
 		let mut i: usize = 0;
 		for line in contents.split("\n") {
 			if i == 1 {
-				self.current_location = line.parse::<usize>().unwrap();
+				self.current_location_id = line.parse::<usize>().unwrap();
 			} else if i > 1 {
 				let mut j: usize = 0;
 				let mut entity_id: usize = 0;

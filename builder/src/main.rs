@@ -85,6 +85,7 @@ fn main() {
 	}
 
 	let mut uuid_to_index: HashMap<usize, usize> = HashMap::new();
+	let mut conversation_index = 0;
 
 	for entity_id in counts.locations.iter() {
 		uuid_to_index.insert(*entity_id, counts.total);
@@ -159,9 +160,9 @@ fn main() {
 		if array_index >= counts.conversations_start {
 			let _ = file.write_all(
 				format!(
-					"\tcomponents.owns_conversation[{}] = {};\n",
+					"\tcomponents.owns_conversation[{}] = Some({});\n",
 					uuid_to_index.get(&entity.speaker.unwrap()).unwrap(),
-					array_index,
+					conversation_index, // array_index,
 				).as_bytes()
 			);
 
@@ -173,6 +174,7 @@ fn main() {
 				);
 			}
 			conversations_file.close_root();
+			conversation_index = conversation_index + 1;
 		}
 		// exits only
 		else if array_index >= counts.exits_start {

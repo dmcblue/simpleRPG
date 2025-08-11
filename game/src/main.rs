@@ -1,9 +1,11 @@
 mod action;
 mod app_data;
 mod constants;
+mod conversation_action;
 mod data;
 mod game;
 mod game_action;
+mod game_mode;
 mod interface;
 mod interface_input;
 mod interface_render;
@@ -23,9 +25,11 @@ use macroquad::prelude::*;
 
 // int
 use app_data::AppData;
+use conversation_action::ConversationAction;
 use data::Components;
 use game::Game;
 use game_action::GameAction;
+use game_mode::GameMode;
 use interface::Interface;
 use main_menu_action::MainMenuAction;
 use mode::Mode;
@@ -43,6 +47,7 @@ async fn main() {
 	change_mode(&mut mode, &mut app_data, &mut game, &mut interface);
 
 	data::main::load_data(&mut game.components);
+	data::conversations::load_conversations(&mut game.components);
 
 	loop {
 		// Reporting
@@ -60,7 +65,14 @@ async fn main() {
 				interface.render_main_menu();
 			},
 			Mode::PLAY => {
-				interface.render_play();
+				match game.mode {
+					GameMode::EXPLORE => {
+						interface.render_play();
+					},
+					GameMode::TALK => {
+						interface.render_play();
+					}
+				}
 			},
 			Mode::SAVE => {
 				interface.render_save();
@@ -113,28 +125,94 @@ async fn main() {
 				}
 			},
 			Mode::PLAY => {
-				match interface.check_input_play(&game) {
-					Ok(response) => {
-						match response {
-							Some(action) => {
-								game.handle_action(action);
-								interface.render_action_taken(&game, &action);
-								interface.render_actions(&game);
+				match game.mode {
+					GameMode::EXPLORE => {
+						match interface.check_input_play(&game) {
+							Ok(response) => {
+								match response {
+									Some(action) => {
+										game.handle_action(action);
+										interface.render_action_taken(&game, &action);
+										match game.mode {
+											GameMode::EXPLORE => {
+												// interface.render_action_taken(&game, &action);
+												interface.render_actions(&game);
+											},
+											GameMode::TALK => {
+												interface.render_conversation(
+													game.get_conversation()
+												);
+											}
+										}
+									},
+									None => ()
+								}
 							},
-							None => ()
+							Err(st) => {
+								match st {
+									GameAction::QUIT => {
+										println!("Goodbye!");
+										break;
+									},
+									GameAction::SAVE => {
+										mode = Mode::SAVE;
+										change_mode(&mut mode, &mut app_data, &mut game, &mut interface);
+									},
+									_ => ()
+								}
+							}
 						}
 					},
-					Err(st) => {
-						match st {
-							GameAction::QUIT => {
-								println!("Goodbye!");
-								break;
+					GameMode::TALK => {
+						match interface.check_input_talk(&game) {
+							// Result<ConversationAction, GameAction>
+							Ok(conversation_action) => {
+								match conversation_action {
+									ConversationAction::ADD(i) => {
+										game.state.current_conversation.path.push(i);
+										interface.render_conversation_response(&game.get_conversation().response);
+										if game.get_conversation().prompts.len() < 2 {
+											game.state.current_conversation.path.pop();
+										}
+										interface.render_conversation(
+											game.get_conversation()
+										);
+									},
+									ConversationAction::BACK => {
+										if game.state.current_conversation.path.len() > 0 {
+											game.state.current_conversation.path.pop();
+											interface.render_conversation(
+												game.get_conversation()
+											);
+										} else {
+											game.mode = GameMode::EXPLORE;
+											game.setup_scene();
+											interface.render_location_detailed(&game);
+											interface.render_actions(&game);
+										}
+									},
+									ConversationAction::END => {
+										game.mode = GameMode::EXPLORE;
+										game.setup_scene();
+										interface.render_location_detailed(&game);
+										interface.render_actions(&game);
+									},
+									ConversationAction::NONE => {}
+								}
 							},
-							GameAction::SAVE => {
-								mode = Mode::SAVE;
-								change_mode(&mut mode, &mut app_data, &mut game, &mut interface);
-							},
-							_ => ()
+							Err(game_action) => {
+								match game_action {
+									GameAction::QUIT => {
+										println!("Goodbye!");
+										break;
+									},
+									GameAction::SAVE => {
+										mode = Mode::SAVE;
+										change_mode(&mut mode, &mut app_data, &mut game, &mut interface);
+									},
+									_ => ()
+								}
+							}
 						}
 					}
 				}

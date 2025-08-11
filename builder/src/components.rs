@@ -6,17 +6,24 @@ use super::counts::Counts;
 pub fn write_components_file(counts: &Counts, inventory_id: usize /* not uuid */) {
 	let mut file = File::create("../game/src/data/components.rs").unwrap();
 	let _ = file.write_all(format!("
-use super::conversations::{{ConversationRoot, ConversationNode}};
+use super::conversations::{{ConversationNode}};
+
+// Order in array:
+// - locations
+// - items
+// - people
+// - exits
+// - conversations
 
 pub struct Components<'a> {{
-	pub conversations: [ConversationRoot; {}],
+	pub conversations: [ConversationNode; {}],
 	pub descriptions: [&'a str; {}],
 	pub destinations: [usize; {}],
 	pub enabled: [bool; {}],
 	pub location_map: [usize; {}],
 	pub locations: [Vec<usize>; {}],
 	pub names: [&'a str; {}],
-	pub owns_conversation: [usize; {}],
+	pub owns_conversation: [Option<usize>; {}],
 	pub exits_start: usize,
 	pub items_start: usize,
 	pub people_start: usize,
@@ -25,32 +32,24 @@ pub struct Components<'a> {{
 	pub uuids: [usize; {}],
 }}
 
-pub fn make_components<'a>() -> Components<'a> {{
-	return Components {{
-		conversations: [ConversationRoot::new(); {}],
-		descriptions: [\"\"; {}],
-		destinations: [0; {}],
-		enabled: [false; {}],
-		location_map: [0; {}],
-		locations: [(); {}].map(|_| Vec::new()),
-		names: [\"\"; {}],
-		owns_conversation: [0; {}],
-		exits_start: {},
-		items_start: {},
-		people_start: {},
-		inventory_id: {},
-		takeable: [false; {}],
-		uuids: [0; {}],
-	}};
-}}
-
 impl Components<'_> {{
-	pub fn move_to(&mut self, entity_uuid: usize, new_location_id: usize) {{
-		let starting_location_id = self.location_map[entity_uuid];
-		let index = self.locations[starting_location_id].iter().position(|eid| *eid == entity_uuid).unwrap();
-		self.locations[starting_location_id].remove(index);
-		self.location_map[entity_uuid] = new_location_id;
-		self.locations[new_location_id].push(entity_uuid);
+	pub fn new() -> Self {{
+		return Components {{
+			conversations: [ConversationNode::new(); {}],
+			descriptions: [\"\"; {}],
+			destinations: [0; {}],
+			enabled: [false; {}],
+			location_map: [0; {}],
+			locations: [(); {}].map(|_| Vec::new()),
+			names: [\"\"; {}],
+			owns_conversation: [None; {}],
+			exits_start: {},
+			items_start: {},
+			people_start: {},
+			inventory_id: {},
+			takeable: [false; {}],
+			uuids: [0; {}],
+		}};
 	}}
 }}
 ",

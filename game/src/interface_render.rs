@@ -15,6 +15,7 @@ use macroquad::prelude::{
 use super::action::{Action, ActionType};
 use super::game::Game;
 use super::interface::Interface;
+use super::data::ConversationNode;
 
 impl Interface {
 	pub fn render_action(&self, game: &Game, action: &Action) -> String {
@@ -70,6 +71,24 @@ impl Interface {
 			self.println(format!("{}. {}", action_id, self.render_action(&game, &action)));
 			action_id = action_id + 1;
 		}
+	}
+
+	pub fn render_conversation(&mut self, conversation_node: &ConversationNode) {
+		let mut i = 1;
+		for prompt in &conversation_node.prompts {
+			if prompt.enabled {
+				self.println(format!("{}. {}", i, prompt.prompt));
+
+				i = i + 1;
+			}
+		}
+
+		self.println_str("(B)ack");
+		self.println_str("(E)nd");
+	}
+
+	pub fn render_conversation_response(&mut self, response: &String) {
+		self.println_str(response.as_str());
 	}
 
 	pub fn render_load(&mut self) {

@@ -45,6 +45,7 @@ impl Interface {
 	pub fn change_mode(&mut self, mode: &Mode) {
 		self.clear();
 		match *mode {
+			// Mode::CONVERSATION => {},
 			Mode::LOAD => {
 				self.input_buffer = String::new();
 			},
@@ -63,6 +64,7 @@ impl Interface {
 	pub fn error(&mut self, mode: &Mode, err_str: &str) {
 		println!("{}", err_str);
 		match mode {
+			// Mode::CONVERSATION => {},
 			Mode::LOAD => {
 				self.input_buffer = String::new();
 			},

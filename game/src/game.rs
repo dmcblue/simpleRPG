@@ -1,66 +1,113 @@
 use std::collections::HashMap;
 
-use super::state::State;
+use super::state::{ConversationPointer, State};
 use super::data::{
 	Components,
-	make_components,
 };
 use super::data::main::get_start_location_id;
+use super::game_mode::GameMode;
 use super::scene::Scene;
 use super::action::{Action, ActionType};
+use super::data::ConversationNode;
 
 pub struct Game<'a> {
-	pub state: State,
 	pub components: Components<'a>,
+	pub mode: GameMode,
 	pub scene: Scene,
+	pub state: State,
 }
 
 impl Game<'_> {
 	pub fn new() -> Self {
 		Game {
-			components: make_components(),
-			scene: Scene{
+			components: Components::new(),
+			mode: GameMode::EXPLORE,
+			scene: Scene {
 				location_id: 0,
 				entity_ids: Vec::new(),
-				exit_ids: Vec::new(),
-				takeable_item_ids: Vec::new(),
 				actions: Vec::new(),
 			},
 			state: State {
-				current_location: get_start_location_id(),
+				current_conversation: ConversationPointer {
+					conversation_id: 0,
+					path: Vec::new(),
+				},
+				current_location_id: get_start_location_id(),
 				last_action_type: ActionType::GO,
 				state_changes: HashMap::new()
 			}
 		}
 	}
 
+	pub fn get_conversation(&self) -> &ConversationNode {
+		let mut pointer: &ConversationNode = &self.components.conversations[self.state.current_conversation.conversation_id];
+		for index in &self.state.current_conversation.path {
+			let mut i = index + 0;
+			while !pointer.prompts[i].enabled {
+				i = i + 1;
+			}
+			pointer = &pointer.prompts[i];
+		}
+		return pointer;
+	}
+
+	pub fn handle_action(&mut self, action: Action) {
+		self.state.last_action_type = action.action_type.clone();
+		match action.action_type {
+			ActionType::CHECK_INVENTORY => (),
+			ActionType::GO => {
+				self.state.current_location_id =
+					self.components.destinations[action.arg_1.unwrap() - self.components.exits_start]
+			},
+			ActionType::LOOK => (),
+			ActionType::TAKE => {
+				let id = action.arg_1.unwrap();
+				let index = self.components.locations[self.state.current_location_id].iter().position(|eid| *eid == id).unwrap();
+				self.components.locations[self.state.current_location_id].remove(index);
+				self.components.locations[self.components.inventory_id].push(id);
+				self.components.location_map[self.components.inventory_id] = id;
+				// record change to world state
+				self.state.update_location(self.components.uuids[id], self.components.inventory_id);
+			},
+			ActionType::TALK => {
+				let speaker_id = action.arg_1.unwrap();
+				match self.components.owns_conversation[speaker_id] {
+					Some(conversation_id) => {
+						self.state.current_conversation.conversation_id = conversation_id;
+						self.state.current_conversation.path.clear();
+						// println!("{:?}", self.components.conversations[self.state.current_conversation.conversation_id]);
+						self.mode = GameMode::TALK;
+					},
+					None => {println!("Oh my gosh no");}
+				}
+			},
+		}
+
+		// reset the scene so list of actions updates
+		self.setup_scene();
+	}
+
 	pub fn setup_scene(&mut self) {
-		let entity_ids: Vec<usize> = self.components.locations[self.state.current_location].to_vec();
-		self.scene.location_id = self.state.current_location;
+		let entity_ids: Vec<usize> = self.components.locations[self.state.current_location_id].to_vec();
+		self.scene.location_id = self.state.current_location_id;
 		self.scene.entity_ids = entity_ids.clone();
-		self.scene.exit_ids = entity_ids.clone(). //performance
+		let exit_ids: Vec<usize> = entity_ids.clone(). //performance
 				into_iter().
-				filter(|id| {
-					if *id < self.components.exits_start {
-						return false;
-					}
-					self.components.destinations.contains(&(*id - self.components.exits_start))
-				}).
+				filter(|id| self.components.is_exit(*id)).
 				collect();
-		self.scene.takeable_item_ids = entity_ids.clone(). //performance
+		let takeable_item_ids: Vec<usize> = entity_ids.clone(). //performance
 				into_iter().
-				filter(|id| {
-					if *id < self.components.items_start || *id >= self.components.people_start {
-						return false;
-					}
-					self.components.takeable[*id - self.components.items_start]
-				}).
+				filter(|id| self.components.is_takeable_item(*id)).
+				collect();
+		let speaker_ids: Vec<usize> = entity_ids.clone(). //performance
+				into_iter().
+				filter(|id| self.components.is_speaker(*id)).
 				collect();
 		self.scene.actions = Vec::new();
 
 		// this is a waste of memory
 		self.scene.actions.push(Action{action_type: ActionType::LOOK, ..Default::default()});
-		for exit_id in &self.scene.exit_ids {
+		for exit_id in &exit_ids {
 			self.scene.actions.push(
 				Action{
 					action_type: ActionType::GO,
@@ -69,7 +116,16 @@ impl Game<'_> {
 				}
 			);
 		}
-		for item_id in &self.scene.takeable_item_ids {
+		for speaker_id in &speaker_ids {
+			self.scene.actions.push(
+				Action{
+					action_type: ActionType::TALK,
+					arg_1: Some(*speaker_id),
+					..Default::default()
+				}
+			);
+		}
+		for item_id in &takeable_item_ids {
 			self.scene.actions.push(
 				Action{
 					action_type: ActionType::TAKE,
@@ -79,30 +135,5 @@ impl Game<'_> {
 			);
 		}
 		self.scene.actions.push(Action{action_type: ActionType::CHECK_INVENTORY, ..Default::default()});
-	}
-
-	pub fn handle_action(&mut self, action: Action) {
-		self.state.last_action_type = action.action_type.clone();
-		match action.action_type {
-			ActionType::CHECK_INVENTORY => (),
-			ActionType::GO => {
-				self.state.current_location =
-					self.components.destinations[action.arg_1.unwrap() - self.components.exits_start]
-			},
-			ActionType::LOOK => (),
-			ActionType::TAKE => {
-				let id = action.arg_1.unwrap();
-				let index = self.components.locations[self.state.current_location].iter().position(|eid| *eid == id).unwrap();
-				self.components.locations[self.state.current_location].remove(index);
-				self.components.locations[self.components.inventory_id].push(id);
-				self.components.location_map[self.components.inventory_id] = id;
-				// record change to world state
-				self.state.update_location(self.components.uuids[id], self.components.inventory_id);
-			},
-			ActionType::TALK => ()
-		}
-
-		// reset the scene so list of actions updates
-		self.setup_scene();
 	}
 }

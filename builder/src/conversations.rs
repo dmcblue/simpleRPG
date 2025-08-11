@@ -30,20 +30,23 @@ impl ConversationsFile {
 	pub fn begin(&mut self) {
 		let _ = self.file_handle.write_all(
 			b"use super::components::Components;\n\n\
-			pub struct ConversationRoot {\n\
-			\tid: usize,\n\
-			\tprompts: Vec<ConversationNode>,
-			}\n\n\
+			#[derive(Debug)]\n\
 			pub struct ConversationNode {\n\
-			\tid: usize,\n\
-			\tprompt: String,\n\
-			\tresponse: String,\n\
-			\tprompts: Vec<ConversationNode>,\
+			\tpub id: usize,\n\
+			\tpub is_root: bool,\n\
+			\tpub enabled: bool,\n\
+			\tpub prompt: String,\n\
+			\tpub response: String,\n\
+			\tpub prompts: Vec<ConversationNode>,\
 			}\n\n\
-			impl ConversationRoot {\n\
-			\tpub fn new () -> Self {\n\
-			\t\treturn ConversationRoot {\n\
+			impl ConversationNode {\n\
+			\tpub fn new() -> Self {\n\
+			\t\treturn ConversationNode {\n\
 			\t\t\tid: 0,\n\
+			\t\t\tenabled: true,\n\
+			\t\t\tis_root: true,\n\
+			\t\t\tprompt: String::new(),\n\
+			\t\t\tresponse: String::new(),\n\
 			\t\t\tprompts: Vec::new(),\n\
 			\t\t};\n\
 			\t}\n\
@@ -62,8 +65,12 @@ impl ConversationsFile {
 	pub fn open_root(&mut self, uuid: usize) {
 		let _ = self.file_handle.write_all(
 			format!(
-				"\t\tConversationRoot{{\n\
+				"\t\tConversationNode{{\n\
 				\t\t\tid: {},\n\
+				\t\t\tenabled: true,\n\
+				\t\t\tis_root: true,\n\
+				\t\t\tprompt: String::new(),\n\
+				\t\t\tresponse: String::new(),\n\
 				\t\t\tprompts: vec![\n\
 				",
 				uuid
@@ -88,12 +95,17 @@ impl ConversationsFile {
 			format!(
 				"{}\t\t\t\tConversationNode{{\n\
 				{}\t\t\t\t\tid: {},\n\
+				{}\t\t\t\t\tenabled: {},\n\
+				{}\t\t\t\t\tis_root: false,\n\
 				{}\t\t\t\t\tprompt: String::from(\"{}\"),\n\
 				{}\t\t\t\t\tresponse: String::from(\"{}\"),\n\
 				{}\t\t\t\t\tprompts: vec![\n",
 				depth,
 				depth,
 				conversation.id,
+				depth,
+				conversation.enabled,
+				depth,
 				depth,
 				conversation.prompt,
 				depth,

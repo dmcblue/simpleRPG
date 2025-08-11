@@ -5,6 +5,7 @@ use std::collections::HashSet;
 // int
 use super::action::{Action};
 use super::constants::{key_to_char, NUMBERS, TYPEABLE};
+use super::conversation_action::ConversationAction;
 use super::game::Game;
 use super::game_action::GameAction;
 use super::interface::Interface;
@@ -100,5 +101,35 @@ impl Interface {
 		}
 
 		return None;
+	}
+
+	pub fn check_input_talk(&mut self, game: &Game) -> Result<ConversationAction, GameAction> {
+		let key_set = get_keys_released();
+
+		if key_set.contains(&KeyCode::Q) {
+			// add some 'game not saved' check
+			// or put a menu to save
+			// maybe this should say: go to main menu
+			return Err(GameAction::QUIT);
+		} else if key_set.contains(&KeyCode::S) {
+			return Err(GameAction::SAVE);
+		} else if key_set.contains(&KeyCode::B) {
+			return Ok(ConversationAction::BACK);
+		} else if key_set.contains(&KeyCode::E) {
+			return Ok(ConversationAction::END);
+		} else {
+			let diff: HashSet<&KeyCode> = key_set.intersection(&self.numbers).collect();
+			// check against number of available options
+			for key in diff.iter() {
+				match TYPEABLE.iter().position(|&r| r == **key) {
+					Some(pos) => {
+						return Ok(ConversationAction::ADD(pos - 1));
+					},
+					None => {}
+				}
+			}
+		}
+
+		return Ok(ConversationAction::NONE);
 	}
 }
