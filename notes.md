@@ -1,7 +1,8 @@
 # Notes
 
 ## To DO
-- [ ] Conversations
+- [x] Conversations
+	- [ ] Conversation Triggers
 - [ ] In game editor
 	- [ ] Editor actions as subset of Game Actions
 	- [ ] In build, double array lengths to allow editing in app (in edit mode)

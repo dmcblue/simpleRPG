@@ -62,12 +62,12 @@ impl Game<'_> {
 			ActionType::LOOK => (),
 			ActionType::TAKE => {
 				let id = action.arg_1.unwrap();
-				let index = self.components.locations[self.state.current_location_id].iter().position(|eid| *eid == id).unwrap();
-				self.components.locations[self.state.current_location_id].remove(index);
-				self.components.locations[self.components.inventory_id].push(id);
-				self.components.location_map[self.components.inventory_id] = id;
+				self.components.move_item_to(self.components.uuids[id], self.components.inventory_id);
 				// record change to world state
-				self.state.update_location(self.components.uuids[id], self.components.inventory_id);
+				self.state.update_location(
+					self.components.uuids[id],
+					self.components.uuids[self.components.inventory_id]
+				);
 			},
 			ActionType::TALK => {
 				let speaker_id = action.arg_1.unwrap();
@@ -95,10 +95,10 @@ impl Game<'_> {
 				into_iter().
 				filter(|id| self.components.is_exit(*id)).
 				collect();
-		let takeable_item_ids: Vec<usize> = entity_ids.clone(). //performance
+		let takeable_item_ids: Vec<usize> = <Vec<usize> as Clone>::clone(&self.components.location_items[self.state.current_location_id]).
 				into_iter().
-				filter(|id| self.components.is_takeable_item(*id)).
-				collect();
+				filter(|id| self.components.is_takeable_item(*id) ).
+				collect::<Vec<_>>();
 		let speaker_ids: Vec<usize> = entity_ids.clone(). //performance
 				into_iter().
 				filter(|id| self.components.is_speaker(*id)).

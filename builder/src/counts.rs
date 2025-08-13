@@ -1,15 +1,20 @@
 pub struct Counts {
 	pub conversations: Vec<usize>,
 	pub conversations_start: usize,
+	pub conversations_end: usize,
 	pub exits: Vec<usize>,
 	pub exits_start: usize,
+	pub exits_end: usize,
 	pub inventory_uuid: usize,
 	pub items: Vec<usize>,
 	pub items_start: usize,
+	pub items_end: usize,
 	pub locations: Vec<usize>,
-	// pub locations_start: usize, // ?
+	pub locations_start: usize,
+	pub locations_end: usize,
 	pub people: Vec<usize>,
 	pub people_start: usize,
+	pub people_end: usize,
 	pub starting_location_id: usize,
 	pub total: usize,
 }
@@ -19,15 +24,20 @@ impl Counts {
 		Self {
 			conversations: Vec::new(),
 			conversations_start: 0,
+			conversations_end: 0,
 			exits: Vec::new(),
 			exits_start: 0,
+			exits_end: 0,
 			inventory_uuid: 0,
 			items: Vec::new(),
 			items_start: 0,
+			items_end: 0,
 			locations: Vec::new(),
-			// locations_start: 0, // ?
+			locations_start: 0,
+			locations_end: 0,
 			people: Vec::new(),
 			people_start: 0,
+			people_end: 0,
 			starting_location_id: 0,
 			total: 0,
 		}

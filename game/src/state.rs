@@ -42,14 +42,30 @@ pub struct State {
 }
 
 impl State {
-	pub fn state_changes_to_file_content(&self, name: String) -> String {
+	pub fn state_changes_to_file_content(&self, name: String, components: &Components) -> String {
 		let mut contents = String::new();
 		contents.push_str(format!("{}\n", name).as_str());
-		contents.push_str(format!("{}\n", self.current_location_id).as_str());
+		contents.push_str(format!("{}\n", components.uuids[self.current_location_id]).as_str());
+		contents.push_str(
+			format!(
+				"{}\n",
+				components.location_items[components.inventory_id].iter().
+							map(|id| format!("{}", components.uuids[*id])).
+							collect::<Vec<_>>().
+							join(":")
+			).as_str()
+		);
+
 		for (entity_uuid, changes) in self.state_changes.iter() {
 			contents.push_str(format!("{}", entity_uuid).as_str());
 			for (field, value) in changes {
-				contents.push_str(format!(";{}:{}", <Field as TryInto<&str>>::try_into(*field).unwrap(), value).as_str());
+				contents.push_str(
+					format!(
+						";{}:{}",
+						<Field as TryInto<&str>>::try_into(*field).unwrap(),
+						value
+					).as_str()
+				);
 			}
 			contents.push_str("\n");
 		}
@@ -57,13 +73,23 @@ impl State {
 		return contents;
 	}
 
-	pub fn load_from_file(&mut self, contents: String, components: &Components) {
+	pub fn load_from_file(&mut self, contents: String, components: &mut Components) {
 		self.state_changes.drain();
 		let mut i: usize = 0;
 		for line in contents.split("\n") {
-			if i == 1 {
-				self.current_location_id = line.parse::<usize>().unwrap();
-			} else if i > 1 {
+			if i == 0 {
+				// name
+			} else if i == 1 {
+				let location_uuid = line.parse::<usize>().unwrap();
+				self.current_location_id = components.uuids.iter().position(|x| *x == location_uuid).unwrap();
+			} else if i == 2 {
+				for part in line.split(":") {
+					let item_uuid = line.parse::<usize>().unwrap();
+					components.location_items[components.inventory_id].push(
+						components.uuids.iter().position(|x| *x == item_uuid).unwrap()
+					);
+				}
+			} else {
 				let mut j: usize = 0;
 				let mut entity_id: usize = 0;
 				for part in line.split(";") {
@@ -80,6 +106,7 @@ impl State {
 						let new_value = subparts.get(1).unwrap().parse::<usize>().unwrap();
 						match field {
 							Field::LOCATION => {
+								// this makes no sense
 								self.update_location(entity_id, new_value);
 							}
 						}
@@ -92,11 +119,11 @@ impl State {
 		}
 	}
 
-	pub fn update_location(&mut self, entity_uuid: usize, new_value: usize) {
+	pub fn update_location(&mut self, entity_uuid: usize, new_value_uuid: usize) {
 		if !self.state_changes.contains_key(&entity_uuid) {
 			self.state_changes.insert(entity_uuid, HashMap::new());
 		}
 
-		self.state_changes.get_mut(&entity_uuid).unwrap().insert(Field::LOCATION, new_value);
+		self.state_changes.get_mut(&entity_uuid).unwrap().insert(Field::LOCATION, new_value_uuid);
 	}
 }

@@ -5,5 +5,4 @@ type: "Item"
 name: ""
 description: |
   ""
-location: 0
 takeable: true

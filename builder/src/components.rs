@@ -20,6 +20,7 @@ pub struct Components<'a> {{
 	pub descriptions: [&'a str; {}],
 	pub destinations: [usize; {}],
 	pub enabled: [bool; {}],
+	pub location_items: [Vec<usize>; {}],
 	pub location_map: [usize; {}],
 	pub locations: [Vec<usize>; {}],
 	pub names: [&'a str; {}],
@@ -35,10 +36,11 @@ pub struct Components<'a> {{
 impl Components<'_> {{
 	pub fn new() -> Self {{
 		return Components {{
-			conversations: [ConversationNode::new(); {}],
+			conversations: [(); {}].map(|_| ConversationNode::new()),
 			descriptions: [\"\"; {}],
 			destinations: [0; {}],
 			enabled: [false; {}],
+			location_items: [(); {}].map(|_| Vec::new()),
 			location_map: [0; {}],
 			locations: [(); {}].map(|_| Vec::new()),
 			names: [\"\"; {}],
@@ -58,6 +60,7 @@ impl Components<'_> {{
 		counts.total, // descriptions
 		counts.exits.len(), // destinations
 		counts.total - counts.conversations_start, // enabled
+		counts.locations.len(), // location items
 		counts.total, // location_map
 		counts.locations.len(), // locations
 		counts.total, // names
@@ -70,6 +73,7 @@ impl Components<'_> {{
 		counts.total, // descriptions
 		counts.exits.len(), // destinations
 		counts.total - counts.conversations_start, // enabled
+		counts.locations.len(), // location items
 		counts.total, // location_map
 		counts.locations.len(), // locations
 		counts.total, // names

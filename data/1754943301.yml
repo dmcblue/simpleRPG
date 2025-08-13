@@ -1,0 +1,9 @@
+metaname: ""
+metadata: ["Halen", "Tavern"]
+id: 1754943301
+type: "Exit"
+name: "Tavern"
+description: |
+  the local Tavern
+location: 1754943165
+to: 1752956389

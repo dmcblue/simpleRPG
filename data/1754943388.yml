@@ -1,0 +1,10 @@
+metaname: ""
+metadata: ["Halen"]
+id: 1754943388
+type: "Exit"
+name: "the main door"
+description: |
+  the main door has recently been patched. There is large brass
+  sign saying 'Come back soon'
+location: 1752956389
+to: 1754943165

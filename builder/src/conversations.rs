@@ -29,7 +29,8 @@ impl ConversationsFile {
 
 	pub fn begin(&mut self) {
 		let _ = self.file_handle.write_all(
-			b"use super::components::Components;\n\n\
+			b"use std::marker::Copy;\n\n\
+			use super::components::Components;\n\n\
 			#[derive(Debug)]\n\
 			pub struct ConversationNode {\n\
 			\tpub id: usize,\n\
@@ -41,7 +42,7 @@ impl ConversationsFile {
 			}\n\n\
 			impl ConversationNode {\n\
 			\tpub fn new() -> Self {\n\
-			\t\treturn ConversationNode {\n\
+			\t\treturn Self {\n\
 			\t\t\tid: 0,\n\
 			\t\t\tenabled: true,\n\
 			\t\t\tis_root: true,\n\

@@ -38,6 +38,8 @@ struct Entity {
 	//#[serde(default)]
 	name: Option<String>,
 	description: Option<String>,
+	// Location specific
+	items: Option<Vec<usize>>,
 	// Exit specific
 	location: Option<usize>,
 	takeable: Option<bool>,
@@ -77,6 +79,7 @@ fn main() {
 				ENTITY_TYPE_PERSON => { counts.people.push(uuid); },
 				_ => ()
 			}
+
 			if entity.metaname == "Inventory" {
 				counts.inventory_uuid = uuid;
 			}
@@ -87,30 +90,36 @@ fn main() {
 	let mut uuid_to_index: HashMap<usize, usize> = HashMap::new();
 	let mut conversation_index = 0;
 
+	counts.locations_start = counts.total;
 	for entity_id in counts.locations.iter() {
 		uuid_to_index.insert(*entity_id, counts.total);
 		counts.total = counts.total + 1;
 	}
+	counts.locations_end = counts.total;
 	counts.items_start = counts.total;
 	for entity_id in counts.items.iter() {
 		uuid_to_index.insert(*entity_id, counts.total);
 		counts.total = counts.total + 1;
 	}
+	counts.items_end = counts.total;
 	counts.people_start = counts.total;
 	for entity_id in counts.people.iter() {
 		uuid_to_index.insert(*entity_id, counts.total);
 		counts.total = counts.total + 1;
 	}
+	counts.people_end = counts.total;
 	counts.exits_start = counts.total;
 	for entity_id in counts.exits.iter() {
 		uuid_to_index.insert(*entity_id, counts.total);
 		counts.total = counts.total + 1;
 	}
+	counts.exits_end = counts.total;
 	counts.conversations_start = counts.total;
 	for entity_id in counts.conversations.iter() {
 		uuid_to_index.insert(*entity_id, counts.total);
 		counts.total = counts.total + 1;
 	}
+	counts.conversations_end = counts.total;
 	for (uuid, entity) in entities {
 		let array_index = *uuid_to_index.get(&uuid).unwrap();
 		// all non-conversations
@@ -139,18 +148,18 @@ fn main() {
 
 			// non-locations
 			if array_index >= counts.items_start {
+
+			}
+
+			if array_index >= counts.locations_start && array_index < counts.locations_end {
 				let _ = file.write_all(
 					format!(
-						"\tcomponents.locations[{}].push({});\n",
-						uuid_to_index.get(&entity.location.unwrap()).unwrap(),
-						array_index
-					).as_bytes()
-				);
-				let _ = file.write_all(
-					format!(
-						"\tcomponents.location_map[{}] = {};\n",
+						"\tcomponents.location_items[{}] = vec![{}];\n",
 						array_index,
-						uuid_to_index.get(&entity.location.unwrap()).unwrap()
+						entity.items.clone().unwrap().iter().
+							map(|id| format!("{}", *uuid_to_index.get(&id).unwrap())).
+							collect::<Vec<_>>().
+							join(", ")
 					).as_bytes()
 				);
 			}
@@ -180,6 +189,20 @@ fn main() {
 		else if array_index >= counts.exits_start {
 			let _ = file.write_all(
 				format!(
+					"\tcomponents.locations[{}].push({});\n",
+					uuid_to_index.get(&entity.location.unwrap()).unwrap(),
+					array_index
+				).as_bytes()
+			);
+			let _ = file.write_all(
+				format!(
+					"\tcomponents.location_map[{}] = {};\n",
+					array_index,
+					uuid_to_index.get(&entity.location.unwrap()).unwrap()
+				).as_bytes()
+			);
+			let _ = file.write_all(
+				format!(
 					"\tcomponents.destinations[{}] = {};\n",
 					array_index - counts.exits_start,
 					uuid_to_index.get(&entity.to.unwrap()).unwrap()
@@ -188,7 +211,20 @@ fn main() {
 		}
 		// people only
 		else if array_index >= counts.people_start {
-
+			let _ = file.write_all(
+				format!(
+					"\tcomponents.locations[{}].push({});\n",
+					uuid_to_index.get(&entity.location.unwrap()).unwrap(),
+					array_index
+				).as_bytes()
+			);
+			let _ = file.write_all(
+				format!(
+					"\tcomponents.location_map[{}] = {};\n",
+					array_index,
+					uuid_to_index.get(&entity.location.unwrap()).unwrap()
+				).as_bytes()
+			);
 		}
 		// items only
 		else if array_index >= counts.items_start {

@@ -5,5 +5,4 @@ type: "Item"
 name: "A candle"
 description: |
   A candle burning bright
-location: 1752956389
 takeable: true

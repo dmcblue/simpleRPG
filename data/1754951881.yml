@@ -1,0 +1,12 @@
+metaname: "Alva"
+metadata: ["Halen", "Alva", "Merchant"]
+id: 1754951881
+type: "Conversation"
+speaker: 1754951709
+prompts:
+  - id: 1754951882
+    prompt: "What do you sell?"
+    response: "Take a look."
+    after: "sell"
+    enabled: true
+    prompts: []

@@ -95,7 +95,7 @@ async fn main() {
 							if u < app_data.save_files.len() {
 								// load
 								let file_name = app_data.save_files[u].clone();
-								read_file(&app_data, file_name.as_str(), &mut game.state, &game.components);
+								read_file(&app_data, file_name.as_str(), &mut game.state, &mut game.components);
 								replay_state_changes(&game.state, &mut game.components);
 								mode = Mode::PLAY;
 								change_mode(&mut mode, &mut app_data, &mut game, &mut interface);
@@ -135,7 +135,6 @@ async fn main() {
 										interface.render_action_taken(&game, &action);
 										match game.mode {
 											GameMode::EXPLORE => {
-												// interface.render_action_taken(&game, &action);
 												interface.render_actions(&game);
 											},
 											GameMode::TALK => {
@@ -165,7 +164,6 @@ async fn main() {
 					},
 					GameMode::TALK => {
 						match interface.check_input_talk(&game) {
-							// Result<ConversationAction, GameAction>
 							Ok(conversation_action) => {
 								match conversation_action {
 									ConversationAction::ADD(i) => {
@@ -256,9 +254,10 @@ fn change_mode(mode: &Mode, app_data: &mut AppData, game: &mut Game, interface: 
 	}
 }
 
-fn read_file(app_data: &AppData, file_name: &str, state: &mut State, components: &Components) {
+fn read_file(app_data: &AppData, file_name: &str, state: &mut State, components: &mut Components) {
 	let save_path = format!("{}{}", app_data.save_dir, file_name);
-	let contents = read_to_string(save_path).unwrap();
+	let contents = read_to_string(save_path.clone()).unwrap();
+	println!("{}:{}", save_path.clone(), contents.clone());
 	state.load_from_file(contents, components);
 }
 
@@ -267,7 +266,11 @@ fn replay_state_changes(state: &State, components: &mut Components) {
 		for (field, value) in changes {
 			match field {
 				Field::LOCATION => {
-					components.move_to(*entity_uuid, *value);
+					// assume item for now
+					components.move_item_to(
+						components.uuids[*entity_uuid],
+						components.uuids.iter().position(|x| *x == *value).unwrap()
+					);
 				}
 			}
 		}
@@ -281,7 +284,7 @@ fn save(app_data: &AppData, game: &Game, name: String) {
 
 	match File::create(save_path) {
 		Ok(save_file) => {
-			let _ = write!(&save_file, "{}", game.state.state_changes_to_file_content(name));
+			let _ = write!(&save_file, "{}", game.state.state_changes_to_file_content(name, &game.components));
 		},
 		Err(e) => { println!("{:?}", e); }
 	}

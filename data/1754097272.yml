@@ -5,3 +5,4 @@ type: "Location"
 name: "Inventory"
 description: |
   Inventory
+items: []
