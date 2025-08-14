@@ -1,3 +1,6 @@
+// Creates the main Components struct with
+// the correct array sizes
+
 use std::fs::File;
 use std::io::Write;
 

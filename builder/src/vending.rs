@@ -1,3 +1,5 @@
+// Builds in the Vending data files
+
 // std
 use std::fs::File;
 use std::io::Write;

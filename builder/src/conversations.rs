@@ -1,3 +1,5 @@
+// Writes out the conversations data
+
 // int
 use std::fs::File;
 use std::io::Write;

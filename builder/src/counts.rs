@@ -1,3 +1,5 @@
+// Used by the builder to track values
+
 pub struct Counts {
 	pub conversations: Vec<usize>,
 	pub conversations_start: usize,
