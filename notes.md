@@ -1,6 +1,8 @@
 # Notes
 
 ## To DO
+- [ ] Move everything to UUID
+- [ ] Move as much code out of code gen
 - [x] Conversations
 	- [ ] Conversation Triggers
 - [ ] In game editor

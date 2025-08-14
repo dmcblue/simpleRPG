@@ -20,7 +20,7 @@ help () (
 		"\t- run: Runs the game.\n"
 		"\t- debug: Runs the game with backtrace displayed on error.\n"
 		"srd make <ObjectType>\n"
-		"\tObjectType: Location, Person, Exit, Item, Conversation\n"
+		"\tObjectType: Conversation, Exit, Item, Location, Person, Vending\n"
 	)
 	printf "${messages[*]}"
 )

@@ -7,6 +7,7 @@ pub fn write_components_file(counts: &Counts, inventory_id: usize /* not uuid */
 	let mut file = File::create("../game/src/data/components.rs").unwrap();
 	let _ = file.write_all(format!("
 use super::conversations::{{ConversationNode}};
+use super::vending::{{Price, Vending, VendItem}};
 
 // Order in array:
 // - locations
@@ -31,6 +32,7 @@ pub struct Components<'a> {{
 	pub inventory_id: usize,
 	pub takeable: [bool; {}],
 	pub uuids: [usize; {}],
+	pub vendings: [Vending; {}],
 }}
 
 impl Components<'_> {{
@@ -51,6 +53,7 @@ impl Components<'_> {{
 			inventory_id: {},
 			takeable: [false; {}],
 			uuids: [0; {}],
+			vendings: [(); {}].map(|_| Vending::new()),
 		}};
 	}}
 }}
@@ -67,6 +70,7 @@ impl Components<'_> {{
 		counts.total, // owns_conversation
 		counts.items.len(), // takeable
 		counts.total, // uuids
+		counts.vending.len(), // vendings
 
 		// Component init
 		counts.total - counts.conversations_start, // conversations
@@ -84,5 +88,6 @@ impl Components<'_> {{
 		inventory_id, // inventory_id
 		counts.items.len(), // takeable
 		counts.total, // uuids
+		counts.vending.len(), // vendings
 	).as_bytes());
 }

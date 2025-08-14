@@ -1,3 +1,8 @@
+mod components;
+mod conversations;
+mod counts;
+mod vending;
+
 // std
 use std::fs;
 use std::fs::File;
@@ -10,21 +15,17 @@ use serde::{Serialize, Deserialize};
 use serde_yml;
 
 // int
-mod components;
 use components::{write_components_file};
-
-mod conversations;
 use conversations::{ConversationNode, ConversationsFile};
-
-mod counts;
 use counts::Counts;
-
+use vending::{Vending, VendingsFile, VendItem};
 
 const ENTITY_TYPE_CONVERSATION: &str = "Conversation";
 const ENTITY_TYPE_EXIT: &str = "Exit";
 const ENTITY_TYPE_ITEM: &str = "Item";
 const ENTITY_TYPE_LOCATION: &str = "Location";
 const ENTITY_TYPE_PERSON: &str = "Person";
+const ENTITY_TYPE_VENDING: &str = "Vending";
 
 
 
@@ -44,6 +45,8 @@ struct Entity {
 	location: Option<usize>,
 	takeable: Option<bool>,
 	to: Option<usize>,
+	// Vending specific
+	vendables: Option<Vec<VendItem>>,
 	// Conversation specific
 	speaker: Option<usize>,
 	prompts: Option<Vec<ConversationNode>>,
@@ -54,11 +57,15 @@ fn main() {
 
 	let mut file = File::create("../game/src/data/main.rs").unwrap();
 	let _ = file.write_all(
-		b"use super::components::Components;\n\n\
+		b"use super::components::Components;\n\
+		use super::vending::{Price, Vending, VendItem};\n\
+		\n\
 		pub fn load_data(components: &mut Components) {\n"
 	);
 	let mut conversations_file = ConversationsFile::new();
 	conversations_file.begin();
+	let mut vendings_file = VendingsFile::new();
+	vendings_file.begin();
 	let mut counts: Counts = Counts::new();
 	let mut entities: HashMap<usize, Entity> = HashMap::new();
 
@@ -77,6 +84,7 @@ fn main() {
 				ENTITY_TYPE_ITEM => { counts.items.push(uuid); },
 				ENTITY_TYPE_LOCATION => { counts.locations.push(uuid); },
 				ENTITY_TYPE_PERSON => { counts.people.push(uuid); },
+				ENTITY_TYPE_VENDING => { counts.vending.push(uuid); },
 				_ => ()
 			}
 
@@ -114,6 +122,12 @@ fn main() {
 		counts.total = counts.total + 1;
 	}
 	counts.exits_end = counts.total;
+	counts.vending_start = counts.total;
+	for entity_id in counts.vending.iter() {
+		uuid_to_index.insert(*entity_id, counts.total);
+		counts.total = counts.total + 1;
+	}
+	counts.vending_end = counts.total;
 	counts.conversations_start = counts.total;
 	for entity_id in counts.conversations.iter() {
 		uuid_to_index.insert(*entity_id, counts.total);
@@ -122,8 +136,8 @@ fn main() {
 	counts.conversations_end = counts.total;
 	for (uuid, entity) in entities {
 		let array_index = *uuid_to_index.get(&uuid).unwrap();
-		// all non-conversations
-		if array_index < counts.conversations_start {
+		// all non-conversations and non-vending
+		if array_index < counts.vending_start {
 			let _ = file.write_all(
 				format!(
 					"\tcomponents.uuids[{}] = {};\n",
@@ -185,6 +199,14 @@ fn main() {
 			conversations_file.close_root();
 			conversation_index = conversation_index + 1;
 		}
+		// vending only
+		else if array_index >= counts.vending_start {
+			let vending = Vending {
+				id: uuid,
+				items: entity.vendables.unwrap()
+			};
+			vendings_file.render_vending(&vending);
+		}
 		// exits only
 		else if array_index >= counts.exits_start {
 			let _ = file.write_all(
@@ -242,6 +264,7 @@ fn main() {
 		);
 	}
 	conversations_file.end();
+	vendings_file.end();
 
 	let _ = file.write_all(
 		format!(

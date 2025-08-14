@@ -1,0 +1,8 @@
+metaname: "Apple"
+metadata: ["Food", "Apple"]
+id: 1755115461
+type: "Item"
+name: "Apple"
+description: |
+  "A red apple"
+takeable: true

@@ -26,7 +26,7 @@ use macroquad::prelude::*;
 // int
 use app_data::AppData;
 use conversation_action::ConversationAction;
-use data::Components;
+use data::{Components, Price, Vending, VendItem};
 use game::Game;
 use game_action::GameAction;
 use game_mode::GameMode;

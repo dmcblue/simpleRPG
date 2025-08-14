@@ -1,4 +1,7 @@
 metaname: ""
 metadata: []
 id: $SRD_ID0
-type: "Person"
+type: "Vending"
+vendables:
+  - id: 0
+    price: "range 1 5"

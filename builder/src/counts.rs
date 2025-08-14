@@ -15,6 +15,9 @@ pub struct Counts {
 	pub people: Vec<usize>,
 	pub people_start: usize,
 	pub people_end: usize,
+	pub vending: Vec<usize>,
+	pub vending_start: usize,
+	pub vending_end: usize,
 	pub starting_location_id: usize,
 	pub total: usize,
 }
@@ -38,6 +41,9 @@ impl Counts {
 			people: Vec::new(),
 			people_start: 0,
 			people_end: 0,
+			vending: Vec::new(),
+			vending_start: 0,
+			vending_end: 0,
 			starting_location_id: 0,
 			total: 0,
 		}
