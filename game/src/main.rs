@@ -269,7 +269,7 @@ fn replay_state_changes(state: &State, components: &mut Components) {
 					// assume item for now
 					components.move_item_to(
 						components.uuids[*entity_uuid],
-						components.uuids.iter().position(|x| *x == *value).unwrap()
+						components.get_array_id(value)
 					);
 				}
 			}

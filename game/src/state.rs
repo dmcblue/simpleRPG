@@ -81,12 +81,12 @@ impl State {
 				// name
 			} else if i == 1 {
 				let location_uuid = line.parse::<usize>().unwrap();
-				self.current_location_id = components.uuids.iter().position(|x| *x == location_uuid).unwrap();
+				self.current_location_id = components.get_array_id(&location_uuid);
 			} else if i == 2 {
 				for part in line.split(":") {
 					let item_uuid = line.parse::<usize>().unwrap();
 					components.location_items[components.inventory_id].push(
-						components.uuids.iter().position(|x| *x == item_uuid).unwrap()
+						components.get_array_id(&item_uuid)
 					);
 				}
 			} else {
@@ -96,7 +96,7 @@ impl State {
 					if j == 0 {
 						match part.parse::<usize>() {
 							Ok(id) => {
-								entity_id = components.uuids.iter().position(|x| *x == id).unwrap();
+								entity_id = components.get_array_id(&id);
 							},
 							Err(_) => {},
 						}

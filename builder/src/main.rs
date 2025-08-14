@@ -140,6 +140,13 @@ fn main() {
 		if array_index < counts.vending_start {
 			let _ = file.write_all(
 				format!(
+					"\tcomponents.uuid_map.insert({}, {});\n",
+					uuid,
+					array_index,
+				).as_bytes()
+			);
+			let _ = file.write_all(
+				format!(
 					"\tcomponents.uuids[{}] = {};\n",
 					array_index,
 					uuid

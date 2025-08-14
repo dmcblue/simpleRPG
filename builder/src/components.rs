@@ -9,6 +9,8 @@ use super::counts::Counts;
 pub fn write_components_file(counts: &Counts, inventory_id: usize /* not uuid */) {
 	let mut file = File::create("../game/src/data/components.rs").unwrap();
 	let _ = file.write_all(format!("
+use std::collections::HashMap;
+
 use super::conversations::{{ConversationNode}};
 use super::vending::{{Price, Vending, VendItem}};
 
@@ -34,6 +36,7 @@ pub struct Components<'a> {{
 	pub people_start: usize,
 	pub inventory_id: usize,
 	pub takeable: [bool; {}],
+	pub uuid_map: HashMap<usize, usize>,
 	pub uuids: [usize; {}],
 	pub vendings: [Vending; {}],
 }}
@@ -55,6 +58,7 @@ impl Components<'_> {{
 			people_start: {},
 			inventory_id: {},
 			takeable: [false; {}],
+			uuid_map: HashMap::new(),
 			uuids: [0; {}],
 			vendings: [(); {}].map(|_| Vending::new()),
 		}};
