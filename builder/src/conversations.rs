@@ -23,35 +23,15 @@ pub struct ConversationsFile {
 impl ConversationsFile {
 	pub fn new() -> Self {
 		Self {
-			file_handle: File::create("../game/src/data/conversations.rs").unwrap(),
+			file_handle: File::create("../game/src/data/conversations_impl.rs").unwrap(),
 		}
 	}
 
 	pub fn begin(&mut self) {
 		let _ = self.file_handle.write_all(
-			b"use std::marker::Copy;\n\n\
-			use super::components::Components;\n\n\
-			#[derive(Debug)]\n\
-			pub struct ConversationNode {\n\
-			\tpub id: usize,\n\
-			\tpub is_root: bool,\n\
-			\tpub enabled: bool,\n\
-			\tpub prompt: String,\n\
-			\tpub response: String,\n\
-			\tpub prompts: Vec<ConversationNode>,\
-			}\n\n\
-			impl ConversationNode {\n\
-			\tpub fn new() -> Self {\n\
-			\t\treturn Self {\n\
-			\t\t\tid: 0,\n\
-			\t\t\tenabled: true,\n\
-			\t\t\tis_root: true,\n\
-			\t\t\tprompt: String::new(),\n\
-			\t\t\tresponse: String::new(),\n\
-			\t\t\tprompts: Vec::new(),\n\
-			\t\t};\n\
-			\t}\n\
-			}\n\n\
+			b"use super::components::Components;\n\
+			use super::conversations::ConversationNode;\n\
+			\n\
 			pub fn load_conversations(components: &mut Components) {\n\
 			\tcomponents.conversations = [\n"
 		);

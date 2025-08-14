@@ -26,7 +26,7 @@ use macroquad::prelude::*;
 // int
 use app_data::AppData;
 use conversation_action::ConversationAction;
-use data::{Components, Price, Vending, VendItem};
+use data::{Components, load_conversations, load_data, Price, Vending, VendItem};
 use game::Game;
 use game_action::GameAction;
 use game_mode::GameMode;
@@ -46,8 +46,8 @@ async fn main() {
 	let mut mode: Mode = Mode::MAIN_MENU;
 	change_mode(&mut mode, &mut app_data, &mut game, &mut interface);
 
-	data::main::load_data(&mut game.components);
-	data::conversations::load_conversations(&mut game.components);
+	load_data(&mut game.components);
+	load_conversations(&mut game.components);
 
 	loop {
 		// Reporting

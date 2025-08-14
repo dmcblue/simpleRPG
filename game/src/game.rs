@@ -3,12 +3,12 @@ use std::collections::HashMap;
 use super::state::{ConversationPointer, State};
 use super::data::{
 	Components,
+	ConversationNode,
+	get_start_location_id
 };
-use super::data::main::get_start_location_id;
 use super::game_mode::GameMode;
 use super::scene::Scene;
 use super::action::{Action, ActionType};
-use super::data::ConversationNode;
 
 pub struct Game<'a> {
 	pub components: Components<'a>,
