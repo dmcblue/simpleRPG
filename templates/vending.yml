@@ -2,6 +2,7 @@ metaname: ""
 metadata: []
 id: $SRD_ID0
 type: "Vending"
+vendor: 0
 vendables:
   - id: 0
     price: "range 1 5"

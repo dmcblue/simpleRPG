@@ -4,7 +4,8 @@ pub enum ActionType {
 	GO,
 	LOOK,
 	TAKE,
-	TALK
+	TALK,
+	VEND,
 }
 
 #[derive(Clone, Copy)]

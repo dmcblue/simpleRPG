@@ -1,4 +1,5 @@
 pub enum GameMode {
 	EXPLORE,
-	TALK
+	TALK,
+	VEND
 }

@@ -2,20 +2,24 @@
 // std
 use std::collections::HashSet;
 
-// int
-use super::action::{Action};
-use super::constants::{key_to_char, NUMBERS, TYPEABLE};
-use super::conversation_action::ConversationAction;
-use super::game::Game;
-use super::game_action::GameAction;
-use super::interface::Interface;
-use super::main_menu_action::{MainMenuAction};
-use super::mode::{Mode};
+// ext
 use macroquad::prelude::{
 	KeyCode,
 	get_char_pressed,
 	get_keys_released,
 };
+
+// int
+use super::action::{Action};
+use super::constants::{key_to_char, NUMBERS, TYPEABLE};
+use super::conversation_action::ConversationAction;
+use super::data::{Vending};
+use super::game::Game;
+use super::game_action::GameAction;
+use super::interface::Interface;
+use super::main_menu_action::{MainMenuAction};
+use super::mode::{Mode};
+use super::vending_action::VendingAction;
 
 
 impl Interface {
@@ -131,5 +135,38 @@ impl Interface {
 		}
 
 		return Ok(ConversationAction::NONE);
+	}
+
+	// return uuid of item to buy
+	pub fn check_input_vend(&mut self, game: &Game, vending: &Vending) -> Result<VendingAction, GameAction> {
+		let key_set = get_keys_released();
+
+		if key_set.contains(&KeyCode::Q) {
+			// add some 'game not saved' check
+			// or put a menu to save
+			// maybe this should say: go to main menu
+			return Err(GameAction::QUIT);
+		} else if key_set.contains(&KeyCode::S) {
+			return Err(GameAction::SAVE);
+		} else if key_set.contains(&KeyCode::B) {
+			return Err(GameAction::BACK);
+		} else {
+			let diff: HashSet<&KeyCode> = key_set.intersection(&self.numbers).collect();
+			// check against number of available options
+			for key in diff.iter() {
+				match TYPEABLE.iter().position(|&r| r == **key) {
+					Some(pos) => {
+						if pos > 0 && pos < vending.items.len() + 1 {
+							return Ok(VendingAction::BUY(vending.items.get(pos - 1).unwrap().id));
+						} else {
+							return Ok(VendingAction::ERROR(String::from("out of bounds")));
+						}
+					},
+					None => {}
+				}
+			}
+		}
+
+		return Ok(VendingAction::NONE);
 	}
 }

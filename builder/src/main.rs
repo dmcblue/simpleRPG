@@ -47,6 +47,7 @@ struct Entity {
 	to: Option<usize>,
 	// Vending specific
 	vendables: Option<Vec<VendItem>>,
+	vendor: Option<usize>,
 	// Conversation specific
 	speaker: Option<usize>,
 	prompts: Option<Vec<ConversationNode>>,
@@ -97,6 +98,7 @@ fn main() {
 
 	let mut uuid_to_index: HashMap<usize, usize> = HashMap::new();
 	let mut conversation_index = 0;
+	let mut vending_index = 0;
 
 	counts.locations_start = counts.total;
 	for entity_id in counts.locations.iter() {
@@ -208,11 +210,19 @@ fn main() {
 		}
 		// vending only
 		else if array_index >= counts.vending_start {
+			let _ = file.write_all(
+				format!(
+					"\tcomponents.owns_vending[{}] = Some({});\n",
+					uuid_to_index.get(&entity.vendor.unwrap()).unwrap(),
+					vending_index, // array_index,
+				).as_bytes()
+			);
 			let vending = Vending {
 				id: uuid,
 				items: entity.vendables.unwrap()
 			};
 			vendings_file.render_vending(&vending);
+			vending_index = vending_index + 1;
 		}
 		// exits only
 		else if array_index >= counts.exits_start {

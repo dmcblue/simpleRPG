@@ -15,7 +15,7 @@ use macroquad::prelude::{
 use super::action::{Action, ActionType};
 use super::game::Game;
 use super::interface::Interface;
-use super::data::ConversationNode;
+use super::data::{Components, ConversationNode, Price, Vending};
 
 impl Interface {
 	pub fn render_action(&self, game: &Game, action: &Action) -> String {
@@ -32,6 +32,9 @@ impl Interface {
 			}
 			ActionType::TALK => {
 				return format!("Speak to {}", game.components.names[action.arg_1.unwrap()]);
+			}
+			ActionType::VEND => {
+				return format!("Buy/Sell with {}", game.components.names[action.arg_1.unwrap()]);
 			}
 		}
 	}
@@ -61,6 +64,9 @@ impl Interface {
 			}
 			ActionType::TALK => {
 				self.println(format!("You turn to {} and say:", game.components.names[action.arg_1.unwrap()]));
+			}
+			ActionType::VEND => {
+				self.println(format!("You haggle with {}:", game.components.names[action.arg_1.unwrap()]));
 			}
 		}
 	}
@@ -152,5 +158,33 @@ impl Interface {
 
 	pub fn render_saved(&mut self) {
 		self.println(String::from("Game saved."));
+	}
+
+	pub fn render_price(&self, price: &Price) -> String {
+		match price {
+			Price::Range(min, max) => {
+				// @TODO how to do random in rust
+				return format!("{} gold", min);
+			}
+		}
+	}
+
+	pub fn render_vending(&mut self, vending: &Vending, components: &Components) {
+		let mut i = 1;
+		for vend_item in &vending.items {
+			components.names[components.get_array_id(&vend_item.id)];
+			self.println(
+				format!(
+					"{}. {} - {}",
+					i,
+					components.names[components.get_array_id(&vend_item.id)], //uuid?
+					self.render_price(&vend_item.price)
+				)
+			);
+
+			i = i + 1;
+		}
+
+		self.println_str("(B)ack");
 	}
 }

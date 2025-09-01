@@ -13,6 +13,7 @@ mod main_menu_action;
 mod mode;
 mod scene;
 mod state;
+mod vending_action;
 
 // std
 use std::fs::{File, read_to_string};
@@ -26,7 +27,7 @@ use macroquad::prelude::*;
 // int
 use app_data::AppData;
 use conversation_action::ConversationAction;
-use data::{Components, load_conversations, load_data, Price, Vending, VendItem};
+use data::{Components, load_conversations, load_data, load_vendings, Price, Vending, VendItem};
 use game::Game;
 use game_action::GameAction;
 use game_mode::GameMode;
@@ -34,6 +35,7 @@ use interface::Interface;
 use main_menu_action::MainMenuAction;
 use mode::Mode;
 use state::{Field, State};
+use vending_action::VendingAction;
 
 #[macroquad::main("MyGame")]
 async fn main() {
@@ -48,6 +50,7 @@ async fn main() {
 
 	load_data(&mut game.components);
 	load_conversations(&mut game.components);
+	load_vendings(&mut game.components);
 
 	loop {
 		// Reporting
@@ -70,6 +73,9 @@ async fn main() {
 						interface.render_play();
 					},
 					GameMode::TALK => {
+						interface.render_play();
+					},
+					GameMode::VEND => {
 						interface.render_play();
 					}
 				}
@@ -141,6 +147,12 @@ async fn main() {
 												interface.render_conversation(
 													game.get_conversation()
 												);
+											},
+											GameMode::VEND => {
+												interface.render_vending(
+													&game.components.vendings[game.state.current_vending_id],
+													&game.components
+												);
 											}
 										}
 									},
@@ -196,6 +208,42 @@ async fn main() {
 										interface.render_actions(&game);
 									},
 									ConversationAction::NONE => {}
+								}
+							},
+							Err(game_action) => {
+								match game_action {
+									GameAction::QUIT => {
+										println!("Goodbye!");
+										break;
+									},
+									GameAction::SAVE => {
+										mode = Mode::SAVE;
+										change_mode(&mut mode, &mut app_data, &mut game, &mut interface);
+									},
+									_ => ()
+								}
+							}
+						}
+					},
+					GameMode::VEND => {
+						match interface.check_input_vend(&game, &game.components.vendings[game.state.current_vending_id]) {
+							Ok(vending_action) => {
+								match vending_action {
+									VendingAction::BUY(i) => {
+										println!("Buy!: {}", i);
+										vending.items
+										let item = game.components.vendings[game.state.current_vending_id].items.get(i).unwrap();
+
+										Action{
+											action_type: ActionType::TAKE,
+											arg_1: Some(*item_id),
+											..Default::default()
+										}
+									},
+									VendingAction::ERROR(message) => {
+										println!("Error!: {}", message);
+									},
+									VendingAction::NONE => {}
 								}
 							},
 							Err(game_action) => {

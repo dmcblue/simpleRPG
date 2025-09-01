@@ -31,6 +31,7 @@ pub struct Components<'a> {{
 	pub locations: [Vec<usize>; {}],
 	pub names: [&'a str; {}],
 	pub owns_conversation: [Option<usize>; {}],
+	pub owns_vending: [Option<usize>; {}],
 	pub exits_start: usize,
 	pub items_start: usize,
 	pub people_start: usize,
@@ -53,6 +54,7 @@ impl Components<'_> {{
 			locations: [(); {}].map(|_| Vec::new()),
 			names: [\"\"; {}],
 			owns_conversation: [None; {}],
+			owns_vending: [None; {}],
 			exits_start: {},
 			items_start: {},
 			people_start: {},
@@ -75,6 +77,7 @@ impl Components<'_> {{
 		counts.locations.len(), // locations
 		counts.total, // names
 		counts.total, // owns_conversation
+		counts.total, // owns_vending
 		counts.items.len(), // takeable
 		counts.total, // uuids
 		counts.vending.len(), // vendings
@@ -89,6 +92,7 @@ impl Components<'_> {{
 		counts.locations.len(), // locations
 		counts.total, // names
 		counts.total, // owns_conversation
+		counts.total, // owns_vending
 		counts.exits_start, // exists start
 		counts.items_start, // items_start
 		counts.people_start, // people_start

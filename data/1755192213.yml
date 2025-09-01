@@ -2,6 +2,7 @@ metaname: ""
 metadata: ["Halen", "Tavern"]
 id: 1755192213
 type: "Vending"
+vendor: 1752956859
 vendables:
   - id: 1755115461
     price: "range 1 5"

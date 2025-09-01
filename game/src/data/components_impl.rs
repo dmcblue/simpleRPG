@@ -12,6 +12,17 @@ impl Components<'_> {
 		self.destinations.contains(&(id - self.exits_start))
 	}
 
+	pub fn is_vendor(&self, id: usize) -> bool {
+		if id < self.people_start || id >= self.exits_start {
+			return false;
+		}
+
+		match self.owns_vending[id] {
+			Some(_) => { true },
+			None => { false }
+		}
+	}
+
 	pub fn is_speaker(&self, id: usize) -> bool {
 		if id < self.people_start || id >= self.exits_start {
 			return false;

@@ -33,6 +33,7 @@ impl Game<'_> {
 					path: Vec::new(),
 				},
 				current_location_id: get_start_location_id(),
+				current_vending_id: 0,
 				last_action_type: ActionType::GO,
 				state_changes: HashMap::new()
 			}
@@ -75,8 +76,18 @@ impl Game<'_> {
 					Some(conversation_id) => {
 						self.state.current_conversation.conversation_id = conversation_id;
 						self.state.current_conversation.path.clear();
-						// println!("{:?}", self.components.conversations[self.state.current_conversation.conversation_id]);
 						self.mode = GameMode::TALK;
+					},
+					None => {println!("Oh my gosh no");}
+				}
+			},
+			ActionType::VEND => {
+				let vendor_id = action.arg_1.unwrap();
+				match self.components.owns_vending[vendor_id] {
+					Some(vending_id) => {
+						self.state.current_vending_id = vending_id;
+						// println!("{:?}", self.components.conversations[self.state.current_conversation.conversation_id]);
+						self.mode = GameMode::VEND;
 					},
 					None => {println!("Oh my gosh no");}
 				}
@@ -103,6 +114,10 @@ impl Game<'_> {
 				into_iter().
 				filter(|id| self.components.is_speaker(*id)).
 				collect();
+		let vendor_ids: Vec<usize> = entity_ids.clone(). //performance
+				into_iter().
+				filter(|id| self.components.is_vendor(*id)).
+				collect();
 		self.scene.actions = Vec::new();
 
 		// this is a waste of memory
@@ -121,6 +136,16 @@ impl Game<'_> {
 				Action{
 					action_type: ActionType::TALK,
 					arg_1: Some(*speaker_id),
+					..Default::default()
+				}
+			);
+		}
+		println!("T{:?}", vendor_ids);
+		for vendor_id in &vendor_ids {
+			self.scene.actions.push(
+				Action{
+					action_type: ActionType::VEND,
+					arg_1: Some(*vendor_id),
 					..Default::default()
 				}
 			);

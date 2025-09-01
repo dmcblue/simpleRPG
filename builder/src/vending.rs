@@ -13,6 +13,7 @@ pub struct Vending {
 	pub id: usize,
 	pub items: Vec<VendItem>
 }
+
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct VendItem {
 	pub id: usize,

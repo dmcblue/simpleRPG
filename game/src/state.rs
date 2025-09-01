@@ -37,6 +37,7 @@ pub struct ConversationPointer {
 pub struct State {
 	pub current_conversation: ConversationPointer,
 	pub current_location_id: usize,
+	pub current_vending_id: usize,
 	pub last_action_type: ActionType,
 	pub state_changes: HashMap<usize, HashMap<Field, usize>>, // what about strings?
 }
