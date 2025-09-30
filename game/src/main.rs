@@ -3,6 +3,7 @@ mod app_data;
 mod constants;
 mod conversation_action;
 mod data;
+mod frame;
 mod game;
 mod game_action;
 mod game_mode;
@@ -25,6 +26,7 @@ use chrono::Utc;
 use macroquad::prelude::*;
 
 // int
+use action::{Action, ActionType};
 use app_data::AppData;
 use conversation_action::ConversationAction;
 use data::{Components, load_conversations, load_data, load_vendings, Price, Vending, VendItem};
@@ -231,14 +233,14 @@ async fn main() {
 								match vending_action {
 									VendingAction::BUY(i) => {
 										println!("Buy!: {}", i);
-										vending.items
+										// vending.items
 										let item = game.components.vendings[game.state.current_vending_id].items.get(i).unwrap();
 
-										Action{
-											action_type: ActionType::TAKE,
-											arg_1: Some(*item_id),
-											..Default::default()
-										}
+										// Action{
+										// 	action_type: ActionType::TAKE,
+										// 	arg_1: Some(*item_id),
+										// 	..Default::default()
+										// }
 									},
 									VendingAction::ERROR(message) => {
 										println!("Error!: {}", message);

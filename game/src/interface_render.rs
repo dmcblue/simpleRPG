@@ -97,54 +97,11 @@ impl Interface {
 		self.println_str(response.as_str());
 	}
 
-	pub fn render_load(&mut self) {
-		clear_background(BLACK);
-
-		let mut i: f32 = 0.0;
-		for line in self.text.iter() {
-			draw_text(line, 10.0, 20.0 + (20.0 * i), 18.0, GREEN);
-			i = i + 1.0;
-		}
-
-		draw_rectangle(0.0, screen_height() - 30.0, screen_width(), screen_height(), self.theme.input_background);
-		draw_text(self.input_buffer.as_str(), 10.0, screen_height() - 15.0, 20.0, BLACK);
-	}
-
 	pub fn render_location_detailed(&mut self, game: &Game) {
 		self.println(format!("You see {}", game.components.descriptions[game.scene.location_id]));
 		for entity_id in &game.scene.entity_ids {
 			self.println(format!("{}", game.components.descriptions[*entity_id]));
 		}
-	}
-
-	pub fn render_main_menu(&mut self) {
-		clear_background(BLACK);
-
-		let mut i: f32 = 0.0;
-		for line in self.text.iter() {
-			draw_text(line, 10.0, 20.0 + (20.0 * i), 18.0, GREEN);
-			i = i + 1.0;
-		}
-	}
-
-	pub fn render_play(&mut self) {
-		clear_background(BLACK);
-
-		let mut i: f32 = 0.0;
-		for line in self.text.iter() {
-			draw_text(line, 10.0, 20.0 + (20.0 * i), 18.0, GREEN);
-			i = i + 1.0;
-		}
-
-
-		draw_text("(q)uit | (s)ave", 10.0, screen_height() - 20.0, 18.0, BLUE);
-	}
-
-	pub fn render_save(&mut self) {
-		clear_background(BLACK);
-		draw_text("Name your save:", 10.0, 15.0, 20.0, GREEN);
-		draw_rectangle(0.0, screen_height() - 30.0, screen_width(), screen_height(), self.theme.input_background);
-		draw_text(self.input_buffer.as_str(), 10.0, screen_height() - 15.0, 20.0, BLACK);
 	}
 
 	pub fn render_save_files(&mut self, file_names: Vec<String>) {
@@ -186,5 +143,65 @@ impl Interface {
 		}
 
 		self.println_str("(B)ack");
+	}
+
+	fn render(frame: &Frame) {
+		clear_background(BLACK);
+
+		let mut i = 0.0;
+		for line in frame._frame.iter() {
+			let t: String = line.iter().collect();
+			draw_text(t.as_str(), 10.0, 20.0 * (i + 1.0), 18.0, GREEN);
+			
+			i = i + 1.0;
+		}
+	}
+
+	// this could be a view template
+	// that takes the interface or something
+	pub fn render_load(&mut self) {
+		// frame.write(109, 39, "X");
+		// clear_background(BLACK);
+
+		let mut i: f32 = 0.0;
+		for line in self.text.iter() {
+			// draw_text(line, 10.0, 20.0 + (20.0 * i), 18.0, GREEN);
+			frame.text(0, i, line);
+			i = i + 1.0;
+		}
+
+		// DAN LEFT OFF
+		draw_rectangle(0.0, screen_height() - 30.0, screen_width(), screen_height(), self.theme.input_background);
+		draw_text(self.input_buffer.as_str(), 10.0, screen_height() - 15.0, 20.0, BLACK);
+	}
+
+	pub fn render_main_menu(&mut self) {
+		clear_background(BLACK);
+
+		let mut i: f32 = 0.0;
+		for line in self.text.iter() {
+			draw_text(line, 10.0, 20.0 + (20.0 * i), 18.0, GREEN);
+			i = i + 1.0;
+		}
+	}
+
+	pub fn render_play(&mut self) {
+		clear_background(BLACK);
+
+		let mut i: f32 = 0.0;
+		for line in self.text.iter() {
+			draw_text(line, 10.0, 20.0 + (20.0 * i), 18.0, GREEN);
+			i = i + 1.0;
+		}
+
+
+		draw_text("(q)uit | (s)ave", 10.0, screen_height() - 20.0, 18.0, BLUE);
+	}
+
+	pub fn render_save(&mut self) {
+		clear_background(BLACK);
+		draw_text("Name your save:", 10.0, 15.0, 20.0, GREEN);
+		draw_rectangle(0.0, screen_height() - 30.0, screen_width(), screen_height(), self.theme.input_background);
+		draw_text(self.input_buffer.as_str(), 10.0, screen_height() - 15.0, 20.0, BLACK);
 	}
 }

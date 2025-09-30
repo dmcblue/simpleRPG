@@ -7,6 +7,7 @@ use std::collections::VecDeque;
 use macroquad::prelude::{Color, KeyCode};
 
 // int
+use super::frame::Frame;
 use super::mode::{Mode};
 use super::constants::{NUMBERS, TYPEABLE};
 
@@ -15,6 +16,7 @@ pub struct Theme {
 }
 
 pub struct Interface {
+	pub frame: Frame,
 	pub input_buffer: String,
 	pub text: VecDeque<String>,
 	pub numbers: HashSet<KeyCode>,
@@ -25,6 +27,7 @@ pub struct Interface {
 impl Interface {
 	pub fn new() -> Interface {
 		Self {
+			frame: Frame::new(),
 			input_buffer: String::new(),
 			text: VecDeque::new(),
 			numbers: HashSet::from(NUMBERS),
