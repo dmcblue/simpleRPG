@@ -1,5 +1,8 @@
 # Notes
 
+- View templates
+- functional mode handling, ie functions to handle logic
+
 ## To DO
 - [?] Move everything to UUID
 - [x] Move as much code out of code gen

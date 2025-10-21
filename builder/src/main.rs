@@ -59,7 +59,7 @@ fn main() {
 	let mut file = File::create("../game/src/data/main.rs").unwrap();
 	let _ = file.write_all(
 		b"use super::components::Components;\n\
-		use super::vending::{Price, Vending, VendItem};\n\
+		// use super::vending::{Price, Vending, VendItem};\n\
 		\n\
 		pub fn load_data(components: &mut Components) {\n"
 	);

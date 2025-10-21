@@ -11,3 +11,6 @@
 
 /builder/target
 /game/target
+
+# Other
+game/log.txt

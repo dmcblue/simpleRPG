@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use super::action::ActionType;
 use super::data::Components;
-use super::data::ConversationNode;
+// use super::data::ConversationNode;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Field {
@@ -84,7 +84,7 @@ impl State {
 				let location_uuid = line.parse::<usize>().unwrap();
 				self.current_location_id = components.get_array_id(&location_uuid);
 			} else if i == 2 {
-				for part in line.split(":") {
+				for _part in line.split(":") {
 					let item_uuid = line.parse::<usize>().unwrap();
 					components.location_items[components.inventory_id].push(
 						components.get_array_id(&item_uuid)

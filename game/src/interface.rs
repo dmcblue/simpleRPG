@@ -1,15 +1,27 @@
 #[warn(non_shorthand_field_patterns)]
 // std
-use std::collections::HashSet;
-use std::collections::VecDeque;
+use std::collections::{HashSet, VecDeque};
 
 // ext
-use macroquad::prelude::{Color, KeyCode};
+use macroquad::prelude::{Color};
 
 // int
-use super::frame::Frame;
+use super::input::{
+	// MacroquadInput,
+	RatatuiInput,
+	KeyCode,
+	NUMBERS,
+	TYPEABLE
+};
 use super::mode::{Mode};
-use super::constants::{NUMBERS, TYPEABLE};
+use super::renderer::{
+	Frame,
+	// Renderer,
+	// MacroquadRenderer,
+	RatatuiRenderer
+};
+
+const TEXT_LENGTH: usize = 30;
 
 pub struct Theme {
 	pub input_background: Color,
@@ -17,25 +29,35 @@ pub struct Theme {
 
 pub struct Interface {
 	pub frame: Frame,
+	pub input: RatatuiInput,
 	pub input_buffer: String,
-	pub text: VecDeque<String>,
+	pub text: VecDeque<String>, // log
 	pub numbers: HashSet<KeyCode>,
+	pub renderer: RatatuiRenderer,
 	pub theme: Theme,
 	pub typeable: HashSet<KeyCode>,
 }
 
 impl Interface {
 	pub fn new() -> Interface {
-		Self {
+		let mut s = Self {
 			frame: Frame::new(),
+			input: RatatuiInput::new(),
 			input_buffer: String::new(),
-			text: VecDeque::new(),
+			text: VecDeque::with_capacity(TEXT_LENGTH),
 			numbers: HashSet::from(NUMBERS),
+			// renderer: MacroquadRenderer::new(),
+			renderer: RatatuiRenderer::new(),
 			theme: Theme{
 				input_background: Color::new(0.8, 0.8, 0.8, 1.00),
 			},
 			typeable: HashSet::from(TYPEABLE),
+		};
+		// trying to start the text at the bottom of the log area but failing
+		for _n in 0..30 {
+			s.println_str("");
 		}
+		s
 	}
 
 	// clear...something. Need better name
@@ -79,7 +101,7 @@ impl Interface {
 
 	pub fn println(&mut self, s: String) {
 		self.text.push_back(s);
-		while self.text.len() > 30 {
+		while self.text.len() > TEXT_LENGTH {
 			let _ = self.text.pop_front();
 		}
 	}

@@ -3,15 +3,17 @@ mod app_data;
 mod constants;
 mod conversation_action;
 mod data;
-mod frame;
 mod game;
 mod game_action;
 mod game_mode;
+mod input;
 mod interface;
 mod interface_input;
 mod interface_render;
+mod log;
 mod main_menu_action;
 mod mode;
+mod renderer;
 mod scene;
 mod state;
 mod vending_action;
@@ -23,24 +25,45 @@ use std::time::{Instant, Duration};
 
 // ext
 use chrono::Utc;
-use macroquad::prelude::*;
+// use macroquad::prelude::*;
+// use tokio::main;
 
 // int
-use action::{Action, ActionType};
+// use action::{Action, ActionType};
 use app_data::AppData;
 use conversation_action::ConversationAction;
-use data::{Components, load_conversations, load_data, load_vendings, Price, Vending, VendItem};
+use data::{
+	Components,
+	load_conversations,
+	load_data,
+	load_vendings,
+	// Price,
+	// Vending,
+	// VendItem
+};
 use game::Game;
 use game_action::GameAction;
 use game_mode::GameMode;
+use input::{Input};
 use interface::Interface;
+use log::Log;
 use main_menu_action::MainMenuAction;
 use mode::Mode;
+use crate::renderer::{
+	// Frame,
+	Renderer,
+	// MacroquadRenderer
+};
 use state::{Field, State};
 use vending_action::VendingAction;
 
-#[macroquad::main("MyGame")]
+// this would all be better handled in an App struct
+// #[macroquad::main("MyGame")]
+// async fn main() {
+#[tokio::main]
 async fn main() {
+	let mut log: Log = Log::new("log.txt").expect("File issue");
+	log.write("Starting up");
 	let mut app_data: AppData = AppData::new();
 	app_data.load();
 
@@ -53,6 +76,8 @@ async fn main() {
 	load_data(&mut game.components);
 	load_conversations(&mut game.components);
 	load_vendings(&mut game.components);
+
+	interface.renderer.init();
 
 	loop {
 		// Reporting
@@ -87,7 +112,9 @@ async fn main() {
 			}
 		}
 
-		next_frame().await;
+		// next_frame().await;
+		interface.renderer.update().await;
+		interface.input.update();
 
 		// update
 		match mode {
@@ -139,7 +166,7 @@ async fn main() {
 							Ok(response) => {
 								match response {
 									Some(action) => {
-										game.handle_action(action);
+										game.handle_action(action, &mut log);
 										interface.render_action_taken(&game, &action);
 										match game.mode {
 											GameMode::EXPLORE => {
@@ -232,9 +259,10 @@ async fn main() {
 							Ok(vending_action) => {
 								match vending_action {
 									VendingAction::BUY(i) => {
-										println!("Buy!: {}", i);
+										log.write(&format!("Buy!: {}", i).to_string());
+										// println!("Buy!: {}", i);
 										// vending.items
-										let item = game.components.vendings[game.state.current_vending_id].items.get(i).unwrap();
+										let _item = game.components.vendings[game.state.current_vending_id].items.get(i).unwrap();
 
 										// Action{
 										// 	action_type: ActionType::TAKE,
@@ -243,7 +271,8 @@ async fn main() {
 										// }
 									},
 									VendingAction::ERROR(message) => {
-										println!("Error!: {}", message);
+										log.write(&format!("Error!: {}", message).to_string());
+										// println!("Error!: {}", message);
 									},
 									VendingAction::NONE => {}
 								}
@@ -268,8 +297,9 @@ async fn main() {
 			Mode::SAVE => {
 				match interface.check_input_save() {
 					Some(s) => {
-						println!("{}", s);
-						save(&app_data, &game, s);
+						// println!("{}", s);
+						log.write(&format!("{}", s).to_string());
+						save(&app_data, &mut game, s, &mut log);
 						mode = Mode::PLAY;
 						change_mode(&mut mode, &mut app_data, &mut game, &mut interface);
 						interface.render_saved();
@@ -279,6 +309,8 @@ async fn main() {
 			},
 		}
     }
+
+	interface.renderer.close();
 }
 
 fn change_mode(mode: &Mode, app_data: &mut AppData, game: &mut Game, interface: &mut Interface) {
@@ -307,7 +339,7 @@ fn change_mode(mode: &Mode, app_data: &mut AppData, game: &mut Game, interface: 
 fn read_file(app_data: &AppData, file_name: &str, state: &mut State, components: &mut Components) {
 	let save_path = format!("{}{}", app_data.save_dir, file_name);
 	let contents = read_to_string(save_path.clone()).unwrap();
-	println!("{}:{}", save_path.clone(), contents.clone());
+	// println!("{}:{}", save_path.clone(), contents.clone());
 	state.load_from_file(contents, components);
 }
 
@@ -327,7 +359,7 @@ fn replay_state_changes(state: &State, components: &mut Components) {
 	}
 }
 
-fn save(app_data: &AppData, game: &Game, name: String) {
+fn save(app_data: &AppData, game: &mut Game, name: String, log: &mut Log) {
 	let time = Utc::now();
 
 	let save_path = format!("{}{}.sv", app_data.save_dir, time.timestamp());
@@ -336,6 +368,7 @@ fn save(app_data: &AppData, game: &Game, name: String) {
 		Ok(save_file) => {
 			let _ = write!(&save_file, "{}", game.state.state_changes_to_file_content(name, &game.components));
 		},
-		Err(e) => { println!("{:?}", e); }
+		// Err(e) => { println!("{:?}", e); }
+		Err(e) => { log.write(&format!("{:?}", e).to_string()); }
 	}
 }

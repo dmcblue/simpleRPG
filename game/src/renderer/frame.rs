@@ -1,19 +1,40 @@
+// const FRAME_WIDTH: usize = 110;
+// const FRAME_HEIGHT: usize = 40;
+const FRAME_WIDTH: usize = 80;
+const FRAME_HEIGHT: usize = 30;
+
 pub struct Frame {
     pub width: usize,
     pub height: usize,
-    _frame: [[char; 110]; 40],
+    _frame: [[char; FRAME_WIDTH]; FRAME_HEIGHT],
 }
 
 impl Frame {
     pub fn new() -> Self {
         return Self {
-            width: 110,
-            height: 40,
-            _frame: [(); 40].map(|_| [' '; 110])
+            width: FRAME_WIDTH,
+            height: FRAME_HEIGHT,
+            _frame: [(); FRAME_HEIGHT].map(|_| [' '; FRAME_WIDTH])
         };
     }
 
-    pub fn box(&mut self, x: usize, y: usize, w: usize, h: usize, ch: char) {
+	pub fn clear_line(&mut self, y: usize) {
+		self.line_horizontal(0, y, FRAME_WIDTH, ' ');
+	}
+
+	pub fn each_line(&mut self) -> std::slice::Iter<'_, [char; FRAME_WIDTH]> {
+		self._frame.iter()
+	}
+
+    pub fn line_horizontal(&mut self, x: usize, y: usize, l: usize, ch: char) {
+        self.rect(x, y, l, 1, ch);
+    }
+
+    pub fn line_vertical(&mut self, x: usize, y:usize, l: usize, ch: char) {
+        self.rect(x, y, 1, l, ch);
+    }
+
+    pub fn rect(&mut self, x: usize, y: usize, w: usize, h: usize, ch: char) {
         let mut i = x;
         let mut j = y;
         let width = x + w;
@@ -32,14 +53,6 @@ impl Frame {
 
             j = j + 1;
         }
-    }
-
-    pub fn hline(&mut self, x: usize, y: usize, l: usize, ch: char) {
-        self.box(x, y, l, 1, ch);
-    }
-
-    pub fn wline(&mut self, x: usize, y:usize, l: usize, ch: char) {
-        self.box(x, y, 1, l, ch);
     }
 
     pub fn text(&mut self, x: usize, y: usize, s: &str) {

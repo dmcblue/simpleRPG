@@ -1,21 +1,22 @@
 #[warn(non_shorthand_field_patterns)]
 // ext
-use macroquad::prelude::{
-	BLACK,
-	BLUE,
-	GREEN,
-	clear_background,
-	draw_rectangle,
-	draw_text,
-	screen_height,
-	screen_width,
-};
+use rand::prelude::*;
 
 // int
 use super::action::{Action, ActionType};
 use super::game::Game;
 use super::interface::Interface;
-use super::data::{Components, ConversationNode, Price, Vending};
+use super::data::{
+	Components,
+	ConversationNode,
+	Price,
+	Vending
+};
+use super::renderer::{
+	// Frame,
+	Renderer,
+	// MacroquadRenderer
+};
 
 impl Interface {
 	pub fn render_action(&self, game: &Game, action: &Action) -> String {
@@ -120,8 +121,8 @@ impl Interface {
 	pub fn render_price(&self, price: &Price) -> String {
 		match price {
 			Price::Range(min, max) => {
-				// @TODO how to do random in rust
-				return format!("{} gold", min);
+				let price = rand::rng().random_range(*min..*max);
+				return format!("{} gold", price);
 			}
 		}
 	}
@@ -145,63 +146,51 @@ impl Interface {
 		self.println_str("(B)ack");
 	}
 
-	fn render(frame: &Frame) {
-		clear_background(BLACK);
+	fn render(&mut self) {
+		self.renderer.render(&mut self.frame);
+	}
 
-		let mut i = 0.0;
-		for line in frame._frame.iter() {
-			let t: String = line.iter().collect();
-			draw_text(t.as_str(), 10.0, 20.0 * (i + 1.0), 18.0, GREEN);
-			
-			i = i + 1.0;
+	pub fn render_input(&mut self) {
+		self.frame.rect(0,self.frame.height - 3,self.frame.width, 3, '#');
+		self.frame.text(1,self.frame.height - 2, self.input_buffer.as_str());
+	}
+
+	pub fn render_global_menu(&mut self) {
+		// this hard code is a mystery
+		self.frame.text(0,self.frame.height - 6, "(q)uit | (s)ave");
+	}
+
+	pub fn render_log(&mut self) {
+		let mut i: usize = 0;
+		for line in self.text.iter() {
+			self.frame.clear_line(i);
+			self.frame.text(0, i, line);
+			i = i + 1;
 		}
 	}
 
 	// this could be a view template
 	// that takes the interface or something
 	pub fn render_load(&mut self) {
-		// frame.write(109, 39, "X");
-		// clear_background(BLACK);
-
-		let mut i: f32 = 0.0;
-		for line in self.text.iter() {
-			// draw_text(line, 10.0, 20.0 + (20.0 * i), 18.0, GREEN);
-			frame.text(0, i, line);
-			i = i + 1.0;
-		}
-
-		// DAN LEFT OFF
-		draw_rectangle(0.0, screen_height() - 30.0, screen_width(), screen_height(), self.theme.input_background);
-		draw_text(self.input_buffer.as_str(), 10.0, screen_height() - 15.0, 20.0, BLACK);
+		self.render_log();
+		self.render_input();
+		self.render();
 	}
 
 	pub fn render_main_menu(&mut self) {
-		clear_background(BLACK);
-
-		let mut i: f32 = 0.0;
-		for line in self.text.iter() {
-			draw_text(line, 10.0, 20.0 + (20.0 * i), 18.0, GREEN);
-			i = i + 1.0;
-		}
+		self.render_log();
+		self.render();
 	}
 
 	pub fn render_play(&mut self) {
-		clear_background(BLACK);
-
-		let mut i: f32 = 0.0;
-		for line in self.text.iter() {
-			draw_text(line, 10.0, 20.0 + (20.0 * i), 18.0, GREEN);
-			i = i + 1.0;
-		}
-
-
-		draw_text("(q)uit | (s)ave", 10.0, screen_height() - 20.0, 18.0, BLUE);
+		self.render_log();
+		self.render_global_menu();
+		self.render();
 	}
 
 	pub fn render_save(&mut self) {
-		clear_background(BLACK);
-		draw_text("Name your save:", 10.0, 15.0, 20.0, GREEN);
-		draw_rectangle(0.0, screen_height() - 30.0, screen_width(), screen_height(), self.theme.input_background);
-		draw_text(self.input_buffer.as_str(), 10.0, screen_height() - 15.0, 20.0, BLACK);
+		self.frame.text(1, 0, "Name your save:");
+		self.render_input();
+		self.render();
 	}
 }

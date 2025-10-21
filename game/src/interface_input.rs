@@ -3,15 +3,24 @@
 use std::collections::HashSet;
 
 // ext
-use macroquad::prelude::{
-	KeyCode,
-	get_char_pressed,
-	get_keys_released,
-};
+// use macroquad::prelude::{
+// 	KeyCode,
+// 	get_char_pressed,
+// 	get_keys_released,
+// };
 
 // int
 use super::action::{Action};
-use super::constants::{key_to_char, NUMBERS, TYPEABLE};
+// use super::constants::{key_to_char, NUMBERS, TYPEABLE};
+use super::input::{
+	Input,
+	// MacroquadInput,
+	KeyCode,
+	NUMBERS,
+	TYPEABLE,
+	// char_to_key,
+	key_to_char
+};
 use super::conversation_action::ConversationAction;
 use super::data::{Vending};
 use super::game::Game;
@@ -24,7 +33,7 @@ use super::vending_action::VendingAction;
 
 impl Interface {
 	pub fn check_input_load(&mut self) -> Option<isize> {
-		let key_set = get_keys_released();
+		let key_set = self.input.get_keys_released();
 		if key_set.contains(&KeyCode::Escape) {
 			return Some(-1);
 		} else if key_set.contains(&KeyCode::Enter) {
@@ -47,12 +56,12 @@ impl Interface {
 		return None;
 	}
 
-	pub fn check_input_main_menu(&self) -> Option<MainMenuAction> {
-		if let Some(ch) = get_char_pressed() {
-			match ch {
-				'n' => { return Some(MainMenuAction::NEW_GAME); },
-				'l' => { return Some(MainMenuAction::LOAD_GAME); },
-				'q' => { return Some(MainMenuAction::QUIT); },
+	pub fn check_input_main_menu(&mut self) -> Option<MainMenuAction> {
+		if let Some(key) = self.input.get_key_pressed() {
+			match key {
+				KeyCode::N => { return Some(MainMenuAction::NEW_GAME); },
+				KeyCode::L => { return Some(MainMenuAction::LOAD_GAME); },
+				KeyCode::Q => { return Some(MainMenuAction::QUIT); },
 				_ => ()
 			}
 		}
@@ -60,8 +69,8 @@ impl Interface {
 		return None;
 	}
 
-	pub fn check_input_play(&self, game: &Game) -> Result<Option<Action>, GameAction> {
-		let key_set = get_keys_released();
+	pub fn check_input_play(&mut self, game: &Game) -> Result<Option<Action>, GameAction> {
+		let key_set = self.input.get_keys_released();
 
 		if key_set.contains(&KeyCode::Q) {
 			// add some 'game not saved' check
@@ -86,7 +95,7 @@ impl Interface {
 	}
 
 	pub fn check_input_save(&mut self) -> Option<String> {
-		let key_set = get_keys_released();
+		let key_set = self.input.get_keys_released();
 
 		if key_set.contains(&KeyCode::Enter) {
 			return Some(self.input_buffer.clone());
@@ -107,8 +116,8 @@ impl Interface {
 		return None;
 	}
 
-	pub fn check_input_talk(&mut self, game: &Game) -> Result<ConversationAction, GameAction> {
-		let key_set = get_keys_released();
+	pub fn check_input_talk(&mut self, _game: &Game) -> Result<ConversationAction, GameAction> {
+		let key_set = self.input.get_keys_released();
 
 		if key_set.contains(&KeyCode::Q) {
 			// add some 'game not saved' check
@@ -138,8 +147,8 @@ impl Interface {
 	}
 
 	// return uuid of item to buy
-	pub fn check_input_vend(&mut self, game: &Game, vending: &Vending) -> Result<VendingAction, GameAction> {
-		let key_set = get_keys_released();
+	pub fn check_input_vend(&mut self, _game: &Game, vending: &Vending) -> Result<VendingAction, GameAction> {
+		let key_set = self.input.get_keys_released();
 
 		if key_set.contains(&KeyCode::Q) {
 			// add some 'game not saved' check

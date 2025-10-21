@@ -9,6 +9,7 @@ use super::data::{
 use super::game_mode::GameMode;
 use super::scene::Scene;
 use super::action::{Action, ActionType};
+use super::log::Log;
 
 pub struct Game<'a> {
 	pub components: Components<'a>,
@@ -52,7 +53,7 @@ impl Game<'_> {
 		return pointer;
 	}
 
-	pub fn handle_action(&mut self, action: Action) {
+	pub fn handle_action(&mut self, action: Action, log: &mut Log) {
 		self.state.last_action_type = action.action_type.clone();
 		match action.action_type {
 			ActionType::CHECK_INVENTORY => (),
@@ -78,7 +79,8 @@ impl Game<'_> {
 						self.state.current_conversation.path.clear();
 						self.mode = GameMode::TALK;
 					},
-					None => {println!("Oh my gosh no");}
+					// None => {println!("Oh my gosh no");}
+					None => {log.write(&format!("Oh my gosh no").to_string());}
 				}
 			},
 			ActionType::VEND => {
@@ -89,7 +91,7 @@ impl Game<'_> {
 						// println!("{:?}", self.components.conversations[self.state.current_conversation.conversation_id]);
 						self.mode = GameMode::VEND;
 					},
-					None => {println!("Oh my gosh no");}
+					None => {log.write(&format!("Oh my gosh no").to_string());}
 				}
 			},
 		}
@@ -140,7 +142,7 @@ impl Game<'_> {
 				}
 			);
 		}
-		println!("T{:?}", vendor_ids);
+
 		for vendor_id in &vendor_ids {
 			self.scene.actions.push(
 				Action{
