@@ -1,5 +1,16 @@
 # Notes
 
+## Application Structure
+
+- main.rs: Boostrap, start and cleanup
+- Application: High level variable loading and management
+- Merge Game and GameState? - No
+	- Game play only
+	- State is the world state/savable state
+	- Scene is the resolved state for the current rendering/gameplay
+- BigMenu/BigMenuRenderer
+
+## Scratch
 - View templates
 - functional mode handling, ie functions to handle logic
 

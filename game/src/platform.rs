@@ -1,12 +1,12 @@
 use std::env;
 use std::fs::{read_dir};
 
-pub struct AppData {
+pub struct Platform {
 	directory_separator: String,
 	pub save_dir: String,
 	pub save_files: Vec<String>
 }
-impl AppData {
+impl Platform {
 	pub fn new () -> Self {
 		Self {
 			directory_separator: String::new(),

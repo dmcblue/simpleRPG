@@ -11,6 +11,17 @@ use super::scene::Scene;
 use super::action::{Action, ActionType};
 use super::log::Log;
 
+/*
+	Game is meant to handle the actual game play
+	not menus for saving, loading
+
+	If we consolidate/abstract, then we need a game state
+	or None even before the game is loaded.
+
+	But what if we go the other direction. It's only handed a
+	game state when its needed. Game is essentially a gamestate
+	interpreter.
+ */
 pub struct Game<'a> {
 	pub components: Components<'a>,
 	pub mode: GameMode,

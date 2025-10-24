@@ -37,7 +37,7 @@ impl Renderer for RatatuiRenderer {
 		let text: String = frame.each_line().map(|cs| cs.iter().collect::<String>()).collect::<Vec<String>>().join("\n");
 		let paragraph = Paragraph::new(text)
 			.block(block);
-		self.terminal.draw(|r_frame| {
+		let _ = self.terminal.draw(|r_frame| {
         	r_frame.render_widget(paragraph, area);
 		});
 	}

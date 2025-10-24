@@ -34,7 +34,7 @@ pub struct Interface {
 	pub text: VecDeque<String>, // log
 	pub numbers: HashSet<KeyCode>,
 	pub renderer: RatatuiRenderer,
-	pub theme: Theme,
+	// pub theme: Theme,
 	pub typeable: HashSet<KeyCode>,
 }
 
@@ -48,9 +48,9 @@ impl Interface {
 			numbers: HashSet::from(NUMBERS),
 			// renderer: MacroquadRenderer::new(),
 			renderer: RatatuiRenderer::new(),
-			theme: Theme{
-				input_background: Color::new(0.8, 0.8, 0.8, 1.00),
-			},
+			// theme: Theme{
+			// 	input_background: Color::new(0.8, 0.8, 0.8, 1.00),
+			// },
 			typeable: HashSet::from(TYPEABLE),
 		};
 		// trying to start the text at the bottom of the log area but failing
