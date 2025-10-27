@@ -12,7 +12,7 @@ impl Log {
 			Ok(f) => {
 				write!(&f, "");
 			},
-			Err(e) => { println!("{:?}", e); }
+			Err(e) => { println!("{:?}", e); },
 		}
 		let file = OpenOptions::new()
 			.write(true)

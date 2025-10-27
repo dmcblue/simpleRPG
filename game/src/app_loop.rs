@@ -71,21 +71,22 @@ impl<'app> App<'app> {
 			Mode::LOAD => {
 				match self.interface.check_input_load() {
 					Some(i) => {
-						// go back
-						if i < 0 {
-							self.set_mode(Mode::MAIN_MENU);
-						} else {
-							let u = (i as usize) - 1;
-							if u < self.platform.save_files.len() {
-								// load
-								let file_name = self.platform.save_files[u].clone();
-								self.read_file(file_name.as_str());
-								self.replay_state_changes();
-								self.set_mode(Mode::PLAY);
-							} else {
-								self.interface.error(&self.mode, "Bad file index")
-							}
-						}
+						// // go back
+						// if i < 0 {
+						// 	self.set_mode(Mode::MAIN_MENU);
+						// } else {
+						// 	let u = (i as usize) - 1;
+						// 	if u < self.platform.save_files.len() {
+						// 		// load
+						// 		let file_name = self.platform.save_files[u].clone();
+						// 		self.read_file(file_name.as_str());
+						// 		self.replay_state_changes();
+						// 		self.set_mode(Mode::PLAY);
+						// 	} else {
+						// 		self.interface.error(&self.mode, "Bad file index")
+						// 	}
+						// }
+						self.handle_input_load(i);
 					},
 					None => ()
 				}

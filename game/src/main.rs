@@ -2,6 +2,7 @@ mod action;
 mod app;
 mod app_loop;
 mod app_save_files;
+mod app_handle_input;
 mod constants;
 mod conversation_action;
 mod data;
