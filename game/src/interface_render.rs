@@ -43,13 +43,21 @@ impl Interface {
 	pub fn render_action_taken(&mut self, game: &Game, action: &Action) {
 		match action.action_type {
 			ActionType::CHECK_INVENTORY => {
+				let mut any = false;
 				self.println_str("In your inventory:");
-				let entity_ids: Vec<usize> = game.components.locations[game.components.inventory_id].to_vec();
-				if entity_ids.len() == 0 {
-					self.println_str("Nothing");
+				for (entity_uuid, quantity) in game.components.location_items[game.components.inventory_id].iter() {
+					if *quantity > 0 {
+						any = true;
+						self.println(format!(
+							" - ({}) {}",
+							*quantity,
+							game.components.names[game.components.get_array_id(entity_uuid)]
+						));
+					}
 				}
-				for entity_id in entity_ids {
-					self.println(format!("{}", game.components.names[entity_id]));
+
+				if !any {
+					self.println_str("Nothing");
 				}
 			}
 			ActionType::GO => {

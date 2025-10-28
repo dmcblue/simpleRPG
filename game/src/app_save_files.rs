@@ -12,8 +12,8 @@ use super::state::{Field};
 impl<'app> App<'app> {
 	pub fn read_file(&mut self, file_name: &str) {
 		let save_path = format!(
-			"{}{}", 
-			self.platform.save_dir, 
+			"{}{}",
+			self.platform.save_dir,
 			file_name
 		);
 		// handle exception
@@ -29,7 +29,7 @@ impl<'app> App<'app> {
 						// assume item for now
 						self.game.components.move_item_to(
 							self.game.components.uuids[*entity_uuid],
-							self.game.components.get_array_id(value)
+							self.game.components.get_array_id(value),
 						);
 					}
 				}
@@ -46,7 +46,7 @@ impl<'app> App<'app> {
 			Ok(save_file) => {
 				let _ = write!(&save_file, "{}", self.game.state.state_changes_to_file_content(name, &self.game.components));
 			},
-			Err(e) => { self.log.write(&format!("{:?}", e).to_string()); }
+			Err(e) => { log::info!("{:?}", e); }
 		}
 	}
 }

@@ -12,6 +12,7 @@ pub fn write_components_file(counts: &Counts, inventory_id: usize /* not uuid */
 use std::collections::HashMap;
 
 use super::conversations::{{ConversationNode}};
+use super::items::{{Items}};
 use super::vending::{{Price, Vending, VendItem}};
 
 // Order in array:
@@ -26,7 +27,7 @@ pub struct Components<'a> {{
 	pub descriptions: [&'a str; {}],
 	pub destinations: [usize; {}],
 	pub enabled: [bool; {}],
-	pub location_items: [Vec<usize>; {}],
+	pub location_items: [Items; {}],
 	pub location_map: [usize; {}],
 	pub locations: [Vec<usize>; {}],
 	pub names: [&'a str; {}],
@@ -49,7 +50,7 @@ impl Components<'_> {{
 			descriptions: [\"\"; {}],
 			destinations: [0; {}],
 			enabled: [false; {}],
-			location_items: [(); {}].map(|_| Vec::new()),
+			location_items: [(); {}].map(|_| Items::new()),
 			location_map: [0; {}],
 			locations: [(); {}].map(|_| Vec::new()),
 			names: [\"\"; {}],

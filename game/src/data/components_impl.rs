@@ -44,11 +44,9 @@ impl Components<'_> {
 	}
 
 	pub fn move_item_to(&mut self, entity_uuid: usize, new_location_id: usize) {
-		let id = self.get_array_id(&entity_uuid);
-		let starting_location_id = self.location_items.iter().position(|item_ids| item_ids.contains(&id)).unwrap();
-		let index = self.location_items[starting_location_id].iter().position(|item_id| *item_id == id).unwrap();
-		self.location_items[starting_location_id].remove(index);
-		self.location_items[new_location_id].push(id);
+		let starting_location_id = self.location_items.iter().position(|items| items.any(entity_uuid) ).unwrap();
+		let _ = self.location_items[starting_location_id].remove(entity_uuid, 1);
+		let _ = self.location_items[new_location_id].add(entity_uuid, 1);
 	}
 
 	pub fn move_to(&mut self, entity_uuid: usize, new_location_id: usize) {

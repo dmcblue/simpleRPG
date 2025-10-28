@@ -1,26 +1,21 @@
 // std
-use std::time::{Instant, Duration};
 
 // ext
 
 // int
-use super::action::{Action};
+use super::action::{Action, ActionType};
 use super::app::App;
 use super::conversation_action::ConversationAction;
 use super::game_action::GameAction;
 use super::game_mode::GameMode;
-use super::input::{Input};
 use super::main_menu_action::MainMenuAction;
 use super::mode::Mode;
-use super::renderer::{
-	Renderer,
-};
 use super::vending_action::VendingAction;
 
 impl<'app> App<'app> {
 	pub fn handle_conversation_action(&mut self, conversation_action: ConversationAction) {
 		match conversation_action {
-			ConversationAction::ADD(i) => {
+			ConversationAction::ASK(i) => {
 				self.game.state.current_conversation.path.push(i);
 				self.interface.render_conversation_response(&self.game.get_conversation().response);
 				if self.game.get_conversation().prompts.len() < 2 {
@@ -100,7 +95,7 @@ impl<'app> App<'app> {
 	}
 
 	pub fn handle_play_action(&mut self, action: Action) {
-		self.game.handle_action(action, &mut self.log);
+		self.game.handle_action(action);//, &mut self.log);
 		self.interface.render_action_taken(&self.game, &action);
 		match self.game.mode {
 			GameMode::EXPLORE => {
@@ -113,7 +108,7 @@ impl<'app> App<'app> {
 			},
 			GameMode::VEND => {
 				self.interface.render_vending(
-					&self.game.components.vendings[self.game.state.current_vending_id],
+					&self.game.components.vendings[self.game.state.current_vending_index],
 					&self.game.components
 				);
 			}
@@ -122,20 +117,41 @@ impl<'app> App<'app> {
 
 	pub fn handle_vending_action(&mut self, vending_action: VendingAction) {
 		match vending_action {
+			VendingAction::BACK => {
+				self.game.mode = GameMode::EXPLORE;
+				self.game.setup_scene();
+				self.interface.render_location_detailed(&self.game);
+				self.interface.render_actions(&self.game);
+			},
 			VendingAction::BUY(i) => {
-				self.log.write(&format!("Buy!: {}", i).to_string());
-				// println!("Buy!: {}", i);
+				log::info!("Buy!: {}", i);
+				log::info!("From!: {}", self.game.state.current_vending_index);
 				// vending.items
-				let _item = self.game.components.vendings[self.game.state.current_vending_id].items.get(i).unwrap();
+				let item_id =
+					self.game.components.
+						vendings[self.game.state.current_vending_index].
+						items.get(i).unwrap().id;
 
-				// Action{
-				// 	action_type: ActionType::TAKE,
-				// 	arg_1: Some(*item_id),
-				// 	..Default::default()
-				// }
+				self.game.components.
+						vendings[self.game.state.current_vending_index].
+						items.remove(i);
+				self.handle_play_action(Action{
+					action_type: ActionType::TAKE,
+					arg_1: Some(self.game.components.get_array_id(&item_id)),
+					..Default::default()
+				});
+
+				if self.game.components.vendings[self.game.state.current_vending_index].items.len() > 0 {
+					self.interface.render_vending(
+						&self.game.components.vendings[self.game.state.current_vending_index],
+						&self.game.components
+					);
+				} else {
+					self.set_mode(Mode::PLAY);
+				}
 			},
 			VendingAction::ERROR(message) => {
-				self.log.write(&format!("Error!: {}", message).to_string());
+				log::info!("Error!: {}", message);
 			},
 			VendingAction::NONE => {}
 		}

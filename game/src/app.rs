@@ -14,7 +14,6 @@ use super::data::{
 };
 use super::game::Game;
 use super::interface::Interface;
-use super::log::Log;
 use super::mode::Mode;
 use super::platform::Platform;
 use crate::renderer::{
@@ -26,7 +25,6 @@ pub struct App<'app> {
 	pub interface: &'app mut Interface,
 	pub is_running: bool,
 	pub lastsec: Instant,
-	pub log: &'app mut Log,
 	pub mode: Mode,
 	pub platform: Platform,
 }
@@ -35,14 +33,12 @@ impl<'app> App<'app> {
 	pub fn new(
 		game: &'app mut Game<'app>,
 		interface: &'app mut Interface,
-		log: &'app mut Log,
 	) -> App<'app> {
 		App {
 			game: game,
 			interface: interface,
 			is_running: true,
 			lastsec: Instant::now(),
-			log: log,
 			mode: Mode::MAIN_MENU,
 			platform: Platform::new(),
 		}

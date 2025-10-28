@@ -1,5 +1,5 @@
 metaname: "Inventory"
-metadata: []
+metadata: ["metalocation"]
 id: 1754097272
 type: "Location"
 name: "Inventory"

@@ -4,12 +4,12 @@ use super::state::{ConversationPointer, State};
 use super::data::{
 	Components,
 	ConversationNode,
+	Items,
 	get_start_location_id
 };
 use super::game_mode::GameMode;
 use super::scene::Scene;
 use super::action::{Action, ActionType};
-use super::log::Log;
 
 /*
 	Game is meant to handle the actual game play
@@ -45,7 +45,7 @@ impl Game<'_> {
 					path: Vec::new(),
 				},
 				current_location_id: get_start_location_id(),
-				current_vending_id: 0,
+				current_vending_index: 0,
 				last_action_type: ActionType::GO,
 				state_changes: HashMap::new()
 			}
@@ -64,7 +64,7 @@ impl Game<'_> {
 		return pointer;
 	}
 
-	pub fn handle_action(&mut self, action: Action, log: &mut Log) {
+	pub fn handle_action(&mut self, action: Action) {
 		self.state.last_action_type = action.action_type.clone();
 		match action.action_type {
 			ActionType::CHECK_INVENTORY => (),
@@ -90,19 +90,21 @@ impl Game<'_> {
 						self.state.current_conversation.path.clear();
 						self.mode = GameMode::TALK;
 					},
-					// None => {println!("Oh my gosh no");}
-					None => {log.write(&format!("Oh my gosh no").to_string());}
+					None => {
+						log::info!("Oh my gosh no");
+					}
 				}
 			},
 			ActionType::VEND => {
 				let vendor_id = action.arg_1.unwrap();
 				match self.components.owns_vending[vendor_id] {
 					Some(vending_id) => {
-						self.state.current_vending_id = vending_id;
-						// println!("{:?}", self.components.conversations[self.state.current_conversation.conversation_id]);
+						self.state.current_vending_index = vending_id;
 						self.mode = GameMode::VEND;
 					},
-					None => {log.write(&format!("Oh my gosh no").to_string());}
+					None => {
+						log::info!("Oh my gosh no");
+					}
 				}
 			},
 		}
@@ -119,8 +121,11 @@ impl Game<'_> {
 				into_iter().
 				filter(|id| self.components.is_exit(*id)).
 				collect();
-		let takeable_item_ids: Vec<usize> = <Vec<usize> as Clone>::clone(&self.components.location_items[self.state.current_location_id]).
+		let takeable_item_ids: Vec<usize> =
+			<Items as Clone>::clone(&self.components.location_items[self.state.current_location_id]).
 				into_iter().
+				filter(|(id, quantity)| *quantity > 0 ).
+				map(|(id, _)| self.components.get_array_id(&id) ).
 				filter(|id| self.components.is_takeable_item(*id) ).
 				collect::<Vec<_>>();
 		let speaker_ids: Vec<usize> = entity_ids.clone(). //performance

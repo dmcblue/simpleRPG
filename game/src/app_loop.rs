@@ -5,16 +5,13 @@ use std::time::{Instant, Duration};
 
 // int
 use super::app::App;
-use super::conversation_action::ConversationAction;
 use super::game_action::GameAction;
 use super::game_mode::GameMode;
 use super::input::{Input};
-use super::main_menu_action::MainMenuAction;
 use super::mode::Mode;
 use super::renderer::{
 	Renderer,
 };
-use super::vending_action::VendingAction;
 
 impl<'app> App<'app> {
 	pub fn per_loop_reporting(&mut self) {
@@ -23,6 +20,7 @@ impl<'app> App<'app> {
 	}
 
 	pub async fn render(&mut self) {
+		log::info!("ll: {}", self.interface.text.len());
 		match self.mode {
 			Mode::LOAD => {
 				self.interface.render_load();
@@ -112,7 +110,7 @@ impl<'app> App<'app> {
 						}
 					},
 					GameMode::VEND => {
-						match self.interface.check_input_vend(&self.game, &self.game.components.vendings[self.game.state.current_vending_id]) {
+						match self.interface.check_input_vend(&self.game, &self.game.components.vendings[self.game.state.current_vending_index]) {
 							Ok(vending_action) => {
 								self.handle_vending_action(vending_action);
 							},
@@ -126,7 +124,6 @@ impl<'app> App<'app> {
 			Mode::SAVE => {
 				match self.interface.check_input_save() {
 					Some(s) => {
-						self.log.write(&format!("{}", s).to_string());
 						self.save(s);
 						self.set_mode(Mode::PLAY);
 						self.interface.render_saved();

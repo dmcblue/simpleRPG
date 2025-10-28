@@ -31,10 +31,10 @@ pub struct Interface {
 	pub frame: Frame,
 	pub input: RatatuiInput,
 	pub input_buffer: String,
-	pub text: VecDeque<String>, // log
 	pub numbers: HashSet<KeyCode>,
 	pub renderer: RatatuiRenderer,
 	// pub theme: Theme,
+	pub text: VecDeque<String>, // log
 	pub typeable: HashSet<KeyCode>,
 }
 

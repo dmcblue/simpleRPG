@@ -13,7 +13,6 @@ mod input;
 mod interface;
 mod interface_input;
 mod interface_render;
-mod log;
 mod main_menu_action;
 mod mode;
 mod platform;
@@ -25,6 +24,7 @@ mod vending_action;
 // std
 
 // ext
+use log4rs;
 
 // int
 use app::App;
@@ -36,11 +36,11 @@ use log::Log;
 // async fn main() {
 #[tokio::main]
 async fn main() {
-	let mut log: Log = Log::new("log.txt").expect("File issue");
-	log.write("Starting up");
+	log4rs::init_file("config/log4rs.yaml", Default::default()).unwrap();
+	log::info!("Starting up");
 	let mut interface = Interface::new();
 	let mut game: Game = Game::new();
-	let mut app: App = App::new(&mut game, &mut interface, &mut log);
+	let mut app: App = App::new(&mut game, &mut interface);
 
 	app.initialize();
 	app.run_loop().await;

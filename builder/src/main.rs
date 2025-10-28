@@ -69,6 +69,7 @@ fn main() {
 	vendings_file.begin();
 	let mut counts: Counts = Counts::new();
 	let mut entities: HashMap<usize, Entity> = HashMap::new();
+	let mut vending_item_ids: Vec<usize> = Vec::new();
 
 	for path in paths {
 		let file_path = path.unwrap().path();
@@ -91,6 +92,8 @@ fn main() {
 
 			if entity.metaname == "Inventory" {
 				counts.inventory_uuid = uuid;
+			} else if entity.metaname == "Vending Ether" {
+				counts.vending_ether_uuid = uuid;
 			}
 			entities.insert(uuid, entity);
 		}
@@ -175,16 +178,32 @@ fn main() {
 			}
 
 			if array_index >= counts.locations_start && array_index < counts.locations_end {
-				let _ = file.write_all(
-					format!(
-						"\tcomponents.location_items[{}] = vec![{}];\n",
-						array_index,
-						entity.items.clone().unwrap().iter().
-							map(|id| format!("{}", *uuid_to_index.get(&id).unwrap())).
-							collect::<Vec<_>>().
-							join(", ")
-					).as_bytes()
-				);
+				// let _ = file.write_all(
+				// 	format!(
+				// 		"\tcomponents.location_items[{}] = vec![{}];\n",
+				// 		array_index,
+				// 		entity.items.clone().unwrap().iter().
+				// 			map(|id| format!("{}", *uuid_to_index.get(&id).unwrap())).
+				// 			collect::<Vec<_>>().
+				// 			join(", ")
+				// 	).as_bytes()
+				// );
+				// @TODO find a way to initialize entire hashmap with data
+				// let solar_distance = HashMap::from([
+				// 	("Mercury", 0.4),
+				// 	("Venus", 0.7),
+				// 	("Earth", 1.0),
+				// 	("Mars", 1.5),
+				// ]);
+				for item_uuid in entity.items.unwrap() {
+					let _ = file.write_all(
+						format!(
+							"\tcomponents.location_items[{}].add({}, 1);\n",
+							array_index,
+							item_uuid
+						).as_bytes()
+					);
+				}
 			}
 		}
 
@@ -222,6 +241,9 @@ fn main() {
 				items: entity.vendables.unwrap()
 			};
 			vendings_file.render_vending(&vending);
+			for item in vending.items {
+				vending_item_ids.push(item.id);
+			}
 			vending_index = vending_index + 1;
 		}
 		// exits only
@@ -280,6 +302,27 @@ fn main() {
 			"\n".as_bytes()
 		);
 	}
+
+	// inefficient
+	let vending_location_index = uuid_to_index.get(&counts.vending_ether_uuid).unwrap();
+	for vending_item_id in vending_item_ids {
+		// let _ = file.write_all(
+		// 	format!(
+		// 		"\tcomponents.location_items[{}].push({});\n",
+		// 		vending_location_index,
+		// 		uuid_to_index.get(&vending_item_id).unwrap()
+		// 	).as_bytes()
+		// );
+		let _ = file.write_all(
+			format!(
+				"\tcomponents.location_items[{}].add({}, 1);\n",
+				vending_location_index,
+				// uuid_to_index.get(&vending_item_id).unwrap()
+				vending_item_id
+			).as_bytes()
+		);
+	}
+
 	conversations_file.end();
 	vendings_file.end();
 

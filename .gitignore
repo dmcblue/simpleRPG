@@ -13,4 +13,4 @@
 /game/target
 
 # Other
-game/log.txt
+game/log/*.log

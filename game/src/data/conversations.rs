@@ -1,7 +1,3 @@
-// use std::marker::Copy;
-
-// use super::components::Components;
-
 #[derive(Debug)]
 pub struct ConversationNode {
 	pub id: usize,
@@ -9,7 +5,8 @@ pub struct ConversationNode {
 	pub enabled: bool,
 	pub prompt: String,
 	pub response: String,
-	pub prompts: Vec<ConversationNode>,}
+	pub prompts: Vec<ConversationNode>,
+}
 
 impl ConversationNode {
 	pub fn new() -> Self {

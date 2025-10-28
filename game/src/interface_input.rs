@@ -11,7 +11,6 @@ use std::collections::HashSet;
 
 // int
 use super::action::{Action};
-// use super::constants::{key_to_char, NUMBERS, TYPEABLE};
 use super::input::{
 	Input,
 	// MacroquadInput,
@@ -136,7 +135,7 @@ impl Interface {
 			for key in diff.iter() {
 				match TYPEABLE.iter().position(|&r| r == **key) {
 					Some(pos) => {
-						return Ok(ConversationAction::ADD(pos - 1));
+						return Ok(ConversationAction::ASK(pos - 1));
 					},
 					None => {}
 				}
@@ -158,7 +157,7 @@ impl Interface {
 		} else if key_set.contains(&KeyCode::S) {
 			return Err(GameAction::SAVE);
 		} else if key_set.contains(&KeyCode::B) {
-			return Err(GameAction::BACK);
+			return Ok(VendingAction::BACK);
 		} else {
 			let diff: HashSet<&KeyCode> = key_set.intersection(&self.numbers).collect();
 			// check against number of available options
@@ -166,7 +165,7 @@ impl Interface {
 				match TYPEABLE.iter().position(|&r| r == **key) {
 					Some(pos) => {
 						if pos > 0 && pos < vending.items.len() + 1 {
-							return Ok(VendingAction::BUY(vending.items.get(pos - 1).unwrap().id));
+							return Ok(VendingAction::BUY(pos - 1));
 						} else {
 							return Ok(VendingAction::ERROR(String::from("out of bounds")));
 						}

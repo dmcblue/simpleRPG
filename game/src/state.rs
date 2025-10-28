@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use super::action::ActionType;
-use super::data::Components;
-// use super::data::ConversationNode;
+use super::data::{Components, Items};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Field {
@@ -37,7 +36,7 @@ pub struct ConversationPointer {
 pub struct State {
 	pub current_conversation: ConversationPointer,
 	pub current_location_id: usize,
-	pub current_vending_id: usize,
+	pub current_vending_index: usize,
 	pub last_action_type: ActionType,
 	pub state_changes: HashMap<usize, HashMap<Field, usize>>, // what about strings?
 }
@@ -51,7 +50,7 @@ impl State {
 			format!(
 				"{}\n",
 				components.location_items[components.inventory_id].iter().
-							map(|id| format!("{}", components.uuids[*id])).
+							map(|(id, _)| format!("{}", components.uuids[*id])).
 							collect::<Vec<_>>().
 							join(":")
 			).as_str()
@@ -86,8 +85,9 @@ impl State {
 			} else if i == 2 {
 				for _part in line.split(":") {
 					let item_uuid = line.parse::<usize>().unwrap();
-					components.location_items[components.inventory_id].push(
-						components.get_array_id(&item_uuid)
+					components.location_items[components.inventory_id].add(
+						components.get_array_id(&item_uuid),
+						1
 					);
 				}
 			} else {

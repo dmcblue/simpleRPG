@@ -1,5 +1,5 @@
 pub enum ConversationAction {
-	ADD(usize),
+	ASK(usize),
 	BACK,
 	END,
 	NONE

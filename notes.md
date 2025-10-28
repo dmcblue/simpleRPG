@@ -1,5 +1,8 @@
 # Notes
 
+- ItemShell for quantity
+- exchange for gold
+
 ## Application Structure
 
 - main.rs: Boostrap, start and cleanup
