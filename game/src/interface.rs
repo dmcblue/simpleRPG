@@ -21,7 +21,7 @@ use super::renderer::{
 	RatatuiRenderer
 };
 
-const TEXT_LENGTH: usize = 30;
+const TEXT_LENGTH: usize = 20;
 
 pub struct Theme {
 	pub input_background: Color,
@@ -99,8 +99,12 @@ impl Interface {
 		}
 	}
 
-	pub fn println(&mut self, s: String) {
-		self.text.push_back(s);
+	pub fn println(&mut self, line: String) {
+		let sub_lines: Vec<String> = self.frame.split_line(0, line.as_str());
+		for sub_line in sub_lines {
+			self.text.push_back(sub_line);
+		}
+		// self.text.push_back(s);
 		while self.text.len() > TEXT_LENGTH {
 			let _ = self.text.pop_front();
 		}

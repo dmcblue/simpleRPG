@@ -1,4 +1,7 @@
 #[warn(non_shorthand_field_patterns)]
+// std
+use log::info;
+
 // ext
 use rand::prelude::*;
 
@@ -168,11 +171,15 @@ impl Interface {
 		self.frame.text(0,self.frame.height - 6, "(q)uit | (s)ave");
 	}
 
+	pub fn render_hr(&mut self){
+		self.println_str("    ---- ---- ----");
+	}
+
 	pub fn render_log(&mut self) {
 		let mut i: usize = 0;
 		for line in self.text.iter() {
 			self.frame.clear_line(i);
-			self.frame.text(0, i, line);
+			self.frame.text(0, i, line.as_str());
 			i = i + 1;
 		}
 	}

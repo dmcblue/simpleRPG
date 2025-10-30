@@ -1,7 +1,0 @@
-Starting up
-ll: 3
-ll: 10
-ll: 20
-ll: 30
-ll: 30
-ll: 30

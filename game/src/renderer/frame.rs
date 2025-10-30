@@ -55,6 +55,26 @@ impl Frame {
         }
     }
 
+	pub fn split_line(&self, x_offset: usize, line: &str) -> Vec<String> {
+		let mut x = x_offset;
+		let mut strs:Vec<String> = Vec::new();
+		let mut current = String::new();
+		for sub_line in line.split('\n') {
+			for s in sub_line.split(' ') {
+				if x + s.len() >= FRAME_WIDTH {
+					strs.push(current.clone());
+					current = String::new();
+				}
+
+				current = current + s + " ";
+			}
+			strs.push(current.clone());
+			current = String::new();
+		}
+
+		return strs;
+	}
+
     pub fn text(&mut self, x: usize, y: usize, s: &str) {
         let mut i = 0;
         for ch in s.chars() {

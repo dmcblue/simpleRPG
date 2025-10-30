@@ -95,7 +95,8 @@ impl<'app> App<'app> {
 	}
 
 	pub fn handle_play_action(&mut self, action: Action) {
-		self.game.handle_action(action);//, &mut self.log);
+		self.interface.render_hr();
+		self.game.handle_action(action);
 		self.interface.render_action_taken(&self.game, &action);
 		match self.game.mode {
 			GameMode::EXPLORE => {
@@ -116,6 +117,7 @@ impl<'app> App<'app> {
 	}
 
 	pub fn handle_vending_action(&mut self, vending_action: VendingAction) {
+		self.interface.render_hr();
 		match vending_action {
 			VendingAction::BACK => {
 				self.game.mode = GameMode::EXPLORE;
