@@ -3,6 +3,7 @@
 - ItemShell for quantity
 - exchange for gold
 - serde_yml not handling > strings
+- bin/srd searching
 
 ## Application Structure
 

@@ -27,7 +27,11 @@ const ENTITY_TYPE_LOCATION: &str = "Location";
 const ENTITY_TYPE_PERSON: &str = "Person";
 const ENTITY_TYPE_VENDING: &str = "Vending";
 
-
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+struct ItemSlot {
+	item_id: usize,
+	quantity: usize,
+}
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 struct Entity {
@@ -40,7 +44,7 @@ struct Entity {
 	name: Option<String>,
 	description: Option<String>,
 	// Location specific
-	items: Option<Vec<usize>>,
+	items: Option<Vec<ItemSlot>>,
 	// Exit specific
 	location: Option<usize>,
 	takeable: Option<bool>,
@@ -195,12 +199,13 @@ fn main() {
 				// 	("Earth", 1.0),
 				// 	("Mars", 1.5),
 				// ]);
-				for item_uuid in entity.items.unwrap() {
+				for item_slot in entity.items.unwrap() {
 					let _ = file.write_all(
 						format!(
-							"\tcomponents.location_items[{}].add({}, 1);\n",
+							"\tcomponents.location_items[{}].add({}, {});\n",
 							array_index,
-							item_uuid
+							item_slot.item_id,
+							item_slot.quantity
 						).as_bytes()
 					);
 				}

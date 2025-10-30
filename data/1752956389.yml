@@ -8,5 +8,9 @@ description: |
   A large main room, full of people
   Smells delicious
 items:
-  - 1754094854
-  - 1754094898
+  -
+    item_id: 1754094854
+    quantity: 1
+  -
+    item_id: 1754094898
+    quantity: 1
