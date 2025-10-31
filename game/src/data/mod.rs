@@ -15,6 +15,6 @@ pub use items::Items;
 pub use vending::{
 	Price,
 	Vending,
-	// VendItem
+	VendItem
 };
 pub use vending_impl::load_vendings;

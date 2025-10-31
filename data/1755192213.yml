@@ -5,4 +5,4 @@ type: "Vending"
 vendor: 1752956859
 vendables:
   - id: 1755115461
-    price: "range 1 5"
+    price: [3, 1761856228]

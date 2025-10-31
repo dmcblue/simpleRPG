@@ -8,9 +8,6 @@ use super::data::{
 	load_conversations,
 	load_data,
 	load_vendings,
-	// Price,
-	// Vending,
-	// VendItem
 };
 use super::game::Game;
 use super::interface::Interface;

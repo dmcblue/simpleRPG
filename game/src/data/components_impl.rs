@@ -2,7 +2,11 @@ use super::components::Components;
 
 impl Components<'_> {
 	pub fn get_array_id(&self, uuid_ref: &usize) -> usize {
-		return *self.uuid_map.get(uuid_ref).unwrap();
+		// return *self.uuid_map.get(uuid_ref).unwrap();
+		match self.uuid_map.get(uuid_ref) {
+			Some(array_id_ref) => { return *array_id_ref; },
+			None => panic!("No array_id for uuid {}", *uuid_ref),
+		}
 	}
 
 	pub fn is_exit(&self, id: usize) -> bool {

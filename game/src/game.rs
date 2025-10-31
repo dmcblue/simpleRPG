@@ -99,6 +99,7 @@ impl Game<'_> {
 				let vendor_id = action.arg_1.unwrap();
 				match self.components.owns_vending[vendor_id] {
 					Some(vending_id) => {
+						// DAN HERE VEND
 						self.state.current_vending_index = vending_id;
 						self.mode = GameMode::VEND;
 					},

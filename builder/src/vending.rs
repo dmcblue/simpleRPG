@@ -17,7 +17,7 @@ pub struct Vending {
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct VendItem {
 	pub id: usize,
-	pub price: String
+	pub price: (usize, usize)
 }
 
 pub struct VendingsFile {
@@ -74,18 +74,11 @@ impl VendingsFile {
 		);
 	}
 
-	pub fn render_vend_item_price(&self, price: &String) -> String {
-		let parts: Vec<&str> = price.split(" ").collect();
-		match *parts.get(0).unwrap() {
-			"range" => {
-				return format!(
-					"Price::Range({}, {})",
-					parts.get(1).unwrap(),
-					parts.get(2).unwrap()
-				);
-			}
-			_ => { return String::new(); }
-		}
-
+	pub fn render_vend_item_price(&self, price: &(usize, usize)) -> String {
+		return format!(
+			"Price{{ item_uuid: {}, quantity: {} }}",
+			price.1,
+			price.0,
+		);
 	}
 }

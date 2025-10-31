@@ -11,6 +11,7 @@ impl Items {
 			_items: HashMap::new(),
 		}
 	}
+
 	pub fn add(&mut self, item_uuid: usize, quantity: usize) -> usize {
 		match self._items.get(&item_uuid) {
 			Some(current_quantity) => {
@@ -31,6 +32,17 @@ impl Items {
 			},
 			None => {
 				return false;
+			},
+		}
+	}
+
+	pub fn how_many(&self, item_uuid: usize) -> usize {
+		match self._items.get(&item_uuid) {
+			Some(current_quantity) => {
+				return *current_quantity;
+			},
+			None => {
+				return 0;
 			},
 		}
 	}

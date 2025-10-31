@@ -1,6 +1,5 @@
 #[warn(non_shorthand_field_patterns)]
 // std
-use log::info;
 
 // ext
 use rand::prelude::*;
@@ -12,7 +11,6 @@ use super::interface::Interface;
 use super::data::{
 	Components,
 	ConversationNode,
-	Price,
 	Vending
 };
 use super::renderer::{
@@ -129,25 +127,17 @@ impl Interface {
 		self.println(String::from("Game saved."));
 	}
 
-	pub fn render_price(&self, price: &Price) -> String {
-		match price {
-			Price::Range(min, max) => {
-				let price = rand::rng().random_range(*min..*max);
-				return format!("{} gold", price);
-			}
-		}
-	}
-
 	pub fn render_vending(&mut self, vending: &Vending, components: &Components) {
 		let mut i = 1;
 		for vend_item in &vending.items {
 			components.names[components.get_array_id(&vend_item.id)];
 			self.println(
 				format!(
-					"{}. {} - {}",
+					"{}. {} - {} {}",
 					i,
 					components.names[components.get_array_id(&vend_item.id)], //uuid?
-					self.render_price(&vend_item.price)
+					&vend_item.price.quantity,
+					components.names[components.get_array_id(&vend_item.price.item_uuid)],
 				)
 			);
 

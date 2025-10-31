@@ -1,6 +1,7 @@
-#[derive(Debug)]
-pub enum Price {
-	Range(usize, usize)
+#[derive(Clone, Copy, Debug)]
+pub struct Price {
+	pub item_uuid: usize,
+	pub quantity: usize,
 }
 
 #[derive(Debug)]

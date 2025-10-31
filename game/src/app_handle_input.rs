@@ -129,14 +129,27 @@ impl<'app> App<'app> {
 				log::info!("Buy!: {}", i);
 				log::info!("From!: {}", self.game.state.current_vending_index);
 				// vending.items
-				let item_id =
+				let item =
 					self.game.components.
 						vendings[self.game.state.current_vending_index].
-						items.get(i).unwrap().id;
+						items.get(i).unwrap();
+				let item_id = item.id;
+				let item_price = item.price;
 
 				self.game.components.
 						vendings[self.game.state.current_vending_index].
 						items.remove(i);
+				// self.game.components.
+				// 		vendings[self.components.inventory_id].
+				// 		items.remove(i);
+				// DAN HERER
+				let quantity =
+					self.game.components.
+					location_items[self.components.inventory_id].
+					how_many(item.id);
+				let _ = self.game.components.
+					location_items[self.components.inventory_id].
+					remove(item.id, item.price);
 				self.handle_play_action(Action{
 					action_type: ActionType::TAKE,
 					arg_1: Some(self.game.components.get_array_id(&item_id)),
