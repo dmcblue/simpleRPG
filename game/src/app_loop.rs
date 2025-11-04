@@ -20,7 +20,6 @@ impl<'app> App<'app> {
 	}
 
 	pub async fn render(&mut self) {
-		log::info!("ll: {}", self.interface.text.len());
 		match self.mode {
 			Mode::LOAD => {
 				self.interface.render_load();

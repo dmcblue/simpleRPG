@@ -126,43 +126,66 @@ impl<'app> App<'app> {
 				self.interface.render_actions(&self.game);
 			},
 			VendingAction::BUY(i) => {
-				log::info!("Buy!: {}", i);
-				log::info!("From!: {}", self.game.state.current_vending_index);
-				// vending.items
 				let item =
 					self.game.components.
 						vendings[self.game.state.current_vending_index].
 						items.get(i).unwrap();
-				let item_id = item.id;
-				let item_price = item.price;
-
-				self.game.components.
-						vendings[self.game.state.current_vending_index].
-						items.remove(i);
-				// self.game.components.
-				// 		vendings[self.components.inventory_id].
-				// 		items.remove(i);
-				// DAN HERER
+				let item_uuid = item.id;
+				let price = item.price;
 				let quantity =
 					self.game.components.
-					location_items[self.components.inventory_id].
-					how_many(item.id);
-				let _ = self.game.components.
-					location_items[self.components.inventory_id].
-					remove(item.id, item.price);
-				self.handle_play_action(Action{
-					action_type: ActionType::TAKE,
-					arg_1: Some(self.game.components.get_array_id(&item_id)),
-					..Default::default()
-				});
+					location_items[self.game.components.inventory_id].
+					how_many(price.item_uuid);
 
+				if price.quantity > quantity {
+					// @TODO turn this into error handling or something
+					self.interface.println(format!(
+						"You do not have enough {}.",
+						self.game.components.names[
+							self.game.components.get_array_id(&price.item_uuid)
+						]
+					));
+				} else {
+					// pay cost
+					self.interface.println(format!(
+						"Paying {} {} for {} {}",
+						price.quantity,
+						self.game.components.names[
+							self.game.components.get_array_id(&price.item_uuid)
+						],
+						1,
+						self.game.components.names[
+							self.game.components.get_array_id(&item_uuid)
+						],
+					));
+					// @TODO? Should this be a transact action instead?
+					// remove from vending list
+					// @ TODO should the vending list come from a location?
+					// that might be hard to track prices
+					self.game.components.
+						vendings[self.game.state.current_vending_index].
+						items.remove(i);
+					let _ = self.game.components.
+						location_items[self.game.components.inventory_id].
+						remove(price.item_uuid, price.quantity);
+					self.handle_play_action(Action{
+						action_type: ActionType::TAKE,
+						arg_1: Some(self.game.components.get_array_id(&item_uuid)),
+						..Default::default()
+					});
+				}
+
+				log::info!("Bought!: {}", self.game.components.vendings[self.game.state.current_vending_index].items.len());
 				if self.game.components.vendings[self.game.state.current_vending_index].items.len() > 0 {
 					self.interface.render_vending(
 						&self.game.components.vendings[self.game.state.current_vending_index],
 						&self.game.components
 					);
 				} else {
+					// It's confusing to know if we are changing mode or game mode
+					self.game.mode = GameMode::EXPLORE;
 					self.set_mode(Mode::PLAY);
+					self.interface.render_play();
 				}
 			},
 			VendingAction::ERROR(message) => {

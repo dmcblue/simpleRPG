@@ -83,7 +83,9 @@ impl Interface {
 			for key in diff.iter() {
 				match TYPEABLE.iter().position(|&r| r == **key) {
 					Some(pos) => {
-						return Ok(Some(game.scene.actions[pos - 1]));
+						if pos < game.scene.actions.len() + 1 {
+							return Ok(Some(game.scene.actions[pos - 1]));
+						}
 					},
 					None => {}
 				}

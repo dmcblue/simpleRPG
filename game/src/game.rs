@@ -178,6 +178,7 @@ impl Game<'_> {
 				}
 			);
 		}
+
 		self.scene.actions.push(Action{action_type: ActionType::CHECK_INVENTORY, ..Default::default()});
 	}
 }
