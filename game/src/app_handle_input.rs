@@ -182,10 +182,10 @@ impl<'app> App<'app> {
 						&self.game.components
 					);
 				} else {
+					log::info!("I am here");
 					// It's confusing to know if we are changing mode or game mode
 					self.game.mode = GameMode::EXPLORE;
-					self.set_mode(Mode::PLAY);
-					self.interface.render_play();
+					self.reset_play_scene();
 				}
 			},
 			VendingAction::ERROR(message) => {

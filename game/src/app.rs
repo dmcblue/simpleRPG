@@ -52,6 +52,18 @@ impl<'app> App<'app> {
 		self.interface.renderer.init();
 	}
 
+	pub fn set_play_scene(&mut self) {
+		// load game somewhere else?
+		self.game.setup_scene();
+		self.interface.render_location_detailed(self.game);
+		self.interface.render_actions(self.game);
+	}
+
+	pub fn reset_play_scene(&mut self) {
+		self.game.setup_scene();
+		self.interface.render_actions(self.game);
+	}
+
 	pub fn set_mode(&mut self, mode: Mode) {
 		self.mode = mode;
 		self.interface.change_mode(&self.mode);
@@ -65,10 +77,7 @@ impl<'app> App<'app> {
 
 			},
 			Mode::PLAY => {
-				// load game somewhere else?
-				self.game.setup_scene();
-				self.interface.render_location_detailed(self.game);
-				self.interface.render_actions(self.game);
+				self.set_play_scene();
 			},
 			Mode::SAVE => {
 
