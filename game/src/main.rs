@@ -3,7 +3,6 @@ mod app;
 mod app_loop;
 mod app_save_files;
 mod app_handle_input;
-mod constants;
 mod conversation_action;
 mod data;
 mod game;
@@ -30,7 +29,6 @@ use log4rs;
 use app::App;
 use game::Game;
 use interface::Interface;
-use log::Log;
 
 // #[macroquad::main("MyGame")]
 // async fn main() {

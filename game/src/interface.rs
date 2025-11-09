@@ -54,7 +54,7 @@ impl Interface {
 			typeable: HashSet::from(TYPEABLE),
 		};
 		// trying to start the text at the bottom of the log area but failing
-		for _n in 0..30 {
+		for _n in 0..TEXT_LENGTH {
 			s.println_str("");
 		}
 		s
@@ -104,7 +104,7 @@ impl Interface {
 		for sub_line in sub_lines {
 			self.text.push_back(sub_line);
 		}
-		// self.text.push_back(s);
+
 		while self.text.len() > TEXT_LENGTH {
 			let _ = self.text.pop_front();
 		}

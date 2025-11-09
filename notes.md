@@ -1,7 +1,6 @@
 # Notes
 
-- ItemShell for quantity
-- exchange for gold
+- Take action should have quantity
 - serde_yml not handling > strings
 - bin/srd searching
 

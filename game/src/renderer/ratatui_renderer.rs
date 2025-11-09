@@ -7,7 +7,7 @@ use ratatui::{
 		// Stylize
 	},
     // text::Line,
-    widgets::{Block, Paragraph},
+    widgets::{Block, Clear, Paragraph},
 };
 
 use super::frame::Frame as RenderFrame;
@@ -38,7 +38,8 @@ impl Renderer for RatatuiRenderer {
 		let paragraph = Paragraph::new(text)
 			.block(block);
 		let _ = self.terminal.draw(|r_frame| {
-        	r_frame.render_widget(paragraph, area);
+        	r_frame.render_widget(Clear, area);
+			r_frame.render_widget(paragraph, area);
 		});
 	}
 

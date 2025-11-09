@@ -5,7 +5,6 @@ use std::time::{Instant, Duration};
 
 // int
 use super::app::App;
-use super::game_action::GameAction;
 use super::game_mode::GameMode;
 use super::input::{Input};
 use super::mode::Mode;

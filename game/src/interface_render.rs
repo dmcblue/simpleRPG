@@ -70,7 +70,10 @@ impl Interface {
 			}
 			ActionType::LOOK => self.render_location_detailed(game),
 			ActionType::TAKE => {
-				self.println(format!("You put {} in your inventory", game.components.names[action.arg_1.unwrap()]));
+				self.println(format!(
+					"You put {} in your inventory",
+					game.components.names[action.arg_1.unwrap()]
+				));
 			}
 			ActionType::TALK => {
 				self.println(format!("You turn to {} and say:", game.components.names[action.arg_1.unwrap()]));
