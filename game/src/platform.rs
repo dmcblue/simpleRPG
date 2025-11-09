@@ -1,5 +1,5 @@
 use std::env;
-use std::fs::{read_dir};
+use std::fs::{create_dir_all, read_dir};
 
 pub struct Platform {
 	directory_separator: String,
@@ -21,7 +21,11 @@ impl Platform {
 			Some(home_path) => {
 				// TODO run on different systems
 				self.save_dir = format!("{}/.local/share/simpleRPG/", home_path.display());
-			},
+				match create_dir_all(self.save_dir.as_str()) {
+					Ok(_) => (),
+					Err(e) => panic!("{}", e),
+				}
+			}
 			None => panic!("Impossible to get your home dir!"),
 		}
 	}
