@@ -30,9 +30,9 @@ impl Frame {
         self.rect(x, y, l, 1, ch);
     }
 
-    pub fn line_vertical(&mut self, x: usize, y:usize, l: usize, ch: char) {
-        self.rect(x, y, 1, l, ch);
-    }
+    // pub fn line_vertical(&mut self, x: usize, y:usize, l: usize, ch: char) {
+    //     self.rect(x, y, 1, l, ch);
+    // }
 
     pub fn rect(&mut self, x: usize, y: usize, w: usize, h: usize, ch: char) {
         let mut i = x;
@@ -59,16 +59,22 @@ impl Frame {
 		let mut x = x_offset;
 		let mut strs:Vec<String> = Vec::new();
 		let mut current = String::new();
-		for sub_line in line.split('\n') {
-			for s in sub_line.split(' ') {
-				if x + s.len() >= FRAME_WIDTH {
-					strs.push(current.clone());
+        let sub_lines: Vec<&str> = line.split('\n').collect();
+		for sub_line in sub_lines {
+            let sub_strs: Vec<&str> = sub_line.split(" ").collect();
+			for s in sub_strs {
+				if x + current.len() + s.len() >= FRAME_WIDTH {
+					strs.push(current.trim().to_string());
 					current = String::new();
 				}
 
 				current = current + s + " ";
 			}
-			strs.push(current.clone());
+
+            let trimmed_line = current.trim().to_string();
+            if trimmed_line.len() > 0 {
+			    strs.push(trimmed_line);
+            }
 			current = String::new();
 		}
 
@@ -78,9 +84,6 @@ impl Frame {
     pub fn text(&mut self, x: usize, y: usize, s: &str) {
         let mut i = 0;
         for ch in s.chars() {
-            // if x + i < self._frame[0].len() && y < self._frame.len() {
-            //     self._frame[y][x + i] = ch;
-            // }
             self.write(x + i, y, ch);
 
             i = i + 1;

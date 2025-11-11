@@ -175,14 +175,12 @@ impl<'app> App<'app> {
 					});
 				}
 
-				log::info!("Bought!: {}", self.game.components.vendings[self.game.state.current_vending_index].items.len());
 				if self.game.components.vendings[self.game.state.current_vending_index].items.len() > 0 {
 					self.interface.render_vending(
 						&self.game.components.vendings[self.game.state.current_vending_index],
 						&self.game.components
 					);
 				} else {
-					log::info!("I am here");
 					// It's confusing to know if we are changing mode or game mode
 					self.game.mode = GameMode::EXPLORE;
 					self.reset_play_scene();

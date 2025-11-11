@@ -3,7 +3,7 @@ metadata: []
 id: $SRD_ID0
 type: "Exit"
 name: ""
-description: |
+description: >
   ""
 location: 0
 to: 0

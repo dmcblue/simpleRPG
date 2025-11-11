@@ -12,7 +12,6 @@ use std::clone::Clone;
 
 // ext
 use serde::{Serialize, Deserialize};
-use serde_yml;
 
 // int
 use components::{write_components_file};
@@ -78,7 +77,7 @@ fn main() {
 	for path in paths {
 		let file_path = path.unwrap().path();
 		let contents = fs::read_to_string(file_path).unwrap();
-		let entity: Entity = serde_yml::from_str(&contents).unwrap();
+		let entity: Entity = serde_saphyr::from_str(&contents).unwrap();
 
 		if entity.entity_type == "Game" {
 			counts.starting_location_id = entity.location.unwrap();
@@ -172,7 +171,7 @@ fn main() {
 				format!(
 					"\tcomponents.descriptions[{}] = \"{}\";\n",
 					array_index,
-					str::replace(entity.description.clone().unwrap().as_str(), "\"", "\\\"")
+					str::replace(entity.description.unwrap().trim(), "\"", "\\\"")
 				).as_bytes()
 			);
 

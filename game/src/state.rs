@@ -50,7 +50,7 @@ impl State {
 			format!(
 				"{}\n",
 				components.location_items[components.inventory_id].iter().
-							map(|(id, _)| format!("{}", components.uuids[*id])).
+							map(|(id, _)| format!("{}", *id)).// components.uuids[components.get_array_id(id)])).
 							collect::<Vec<_>>().
 							join(":")
 			).as_str()
