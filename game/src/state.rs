@@ -1,8 +1,14 @@
+// std
 use std::collections::HashMap;
+
+// ext
+use serde::{Serialize, Deserialize};
+
+// int
 use super::action::ActionType;
 use super::data::{Components, Items};
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Field {
 	LOCATION
 }
@@ -28,6 +34,22 @@ impl TryFrom<Field> for &str {
     }
 }
 
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+pub struct SaveStateChange {
+	entity_uuid: usize,
+	field: Field,
+	value: usize, // uuid
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+pub struct Save {
+	name: String,
+	current_location_uuid: usize,
+	// item_uuid -> quantity
+	inventory: HashMap<usize, usize>,
+	state_changes: Vec<SaveStateChange>,
+}
+
 pub struct ConversationPointer {
 	pub conversation_id: usize,
 	pub path: Vec<usize>,
@@ -42,82 +64,114 @@ pub struct State {
 }
 
 impl State {
-	pub fn state_changes_to_file_content(&self, name: String, components: &Components) -> String {
-		let mut contents = String::new();
-		contents.push_str(format!("{}\n", name).as_str());
-		contents.push_str(format!("{}\n", components.uuids[self.current_location_id]).as_str());
-		contents.push_str(
-			format!(
-				"{}\n",
-				components.location_items[components.inventory_id].iter().
-							map(|(id, _)| format!("{}", *id)).// components.uuids[components.get_array_id(id)])).
-							collect::<Vec<_>>().
-							join(":")
-			).as_str()
-		);
+	pub fn state_changes_to_save_state_changes(&self) -> Vec<SaveStateChange> {
+		let mut save_state_changes: Vec<SaveStateChange> = Vec::new();
 
 		for (entity_uuid, changes) in self.state_changes.iter() {
-			contents.push_str(format!("{}", entity_uuid).as_str());
 			for (field, value) in changes {
-				contents.push_str(
-					format!(
-						";{}:{}",
-						<Field as TryInto<&str>>::try_into(*field).unwrap(),
-						value
-					).as_str()
+				save_state_changes.push(
+					SaveStateChange{
+						entity_uuid: *entity_uuid,
+						field: *field,
+						value: *value, // uuid
+				
+					}
 				);
 			}
-			contents.push_str("\n");
 		}
 
-		return contents;
+		return save_state_changes;
+	}
+
+	pub fn state_changes_to_file_content(&self, name: String, components: &Components) -> String {
+		let save = Save{
+			name: name,
+			current_location_uuid: components.uuids[self.current_location_id],
+			inventory: components.location_items[components.inventory_id].to_hash_map(),
+			state_changes: self.state_changes_to_save_state_changes(),
+		};
+
+		return serde_saphyr::to_string(&save).unwrap();
 	}
 
 	pub fn load_from_file(&mut self, contents: String, components: &mut Components) {
 		self.state_changes.drain();
-		let mut i: usize = 0;
-		for line in contents.split("\n") {
-			if i == 0 {
-				// name
-			} else if i == 1 {
-				let location_uuid = line.parse::<usize>().unwrap();
-				self.current_location_id = components.get_array_id(&location_uuid);
-			} else if i == 2 {
-				for _part in line.split(":") {
-					let item_uuid = line.parse::<usize>().unwrap();
-					components.location_items[components.inventory_id].add(
-						components.get_array_id(&item_uuid),
-						1
-					);
-				}
-			} else {
-				let mut j: usize = 0;
-				let mut entity_id: usize = 0;
-				for part in line.split(";") {
-					if j == 0 {
-						match part.parse::<usize>() {
-							Ok(id) => {
-								entity_id = components.get_array_id(&id);
-							},
-							Err(_) => {},
-						}
-					} else {
-						let subparts: Vec<&str> = part.split(":").collect();
-						let field = <&str as TryInto<Field>>::try_into(subparts.get(0).unwrap()).unwrap();
-						let new_value = subparts.get(1).unwrap().parse::<usize>().unwrap();
-						match field {
-							Field::LOCATION => {
-								// this makes no sense
-								self.update_location(entity_id, new_value);
-							}
-						}
-					}
+		components.location_items[components.inventory_id].drain();
 
-					j = j + 1;
+		let save: Save = serde_saphyr::from_str(&contents).unwrap();
+		self.current_location_id = components.get_array_id(&save.current_location_uuid);
+		for (item_uuid, quantity) in save.inventory {
+			components.location_items[components.inventory_id].add(
+				item_uuid,
+				quantity
+			);
+		}
+		for save_state_change in save.state_changes {
+			match save_state_change.field {
+				Field::LOCATION => {
+					// this makes no sense
+					self.update_location(save_state_change.entity_uuid, save_state_change.value);
 				}
 			}
-			i = i + 1;
 		}
+
+		// pub struct Save {
+		// 	name: String,
+		// 	current_location_uuid: usize,
+		// 	// item_uuid -> quantity
+		// 	inventory: HashMap<usize, usize>,
+		// 	state_changes: Vec<SaveStateChange>,
+		// }
+		// pub struct SaveStateChange {
+		// 	entity_uuid: usize,
+		// 	field: Field,
+		// 	value: usize, // uuid
+		// }
+
+		// let mut i: usize = 0;
+		// for line in contents.split("\n") {
+		// 	if i == 0 {
+		// 		// name
+		// 	} else if i == 1 {
+		// 		let location_uuid = line.parse::<usize>().unwrap();
+		// 		self.current_location_id = components.get_array_id(&location_uuid);
+		// 	} else if i == 2 {
+		// 		for part in line.split(":") {
+		// 			let item_uuid = part.parse::<usize>().unwrap();
+		// 			components.location_items[components.inventory_id].add(
+		// 				// components.get_array_id(&item_uuid),
+		// 				item_uuid,
+		// 				1
+		// 			);
+		// 		}
+		// 	} else {
+		// 		let mut j: usize = 0;
+		// 		let mut entity_id: usize = 0;
+		// 		for part in line.split(";") {
+		// 			if j == 0 {
+		// 				match part.parse::<usize>() {
+		// 					Ok(id) => {
+		// 						entity_id = components.get_array_id(&id);
+		// 					},
+		// 					Err(_) => {},
+		// 				}
+		// 			} else {
+		// 				let subparts: Vec<&str> = part.split(":").collect();
+		// 				let field = <&str as TryInto<Field>>::try_into(subparts.get(0).unwrap()).unwrap();
+		// 				let new_value = subparts.get(1).unwrap().parse::<usize>().unwrap();
+		// 				match field {
+		// 					Field::LOCATION => {
+		// 						// this makes no sense
+		// 						self.update_location(entity_id, new_value);
+		// 					}
+		// 				}
+		// 			}
+
+		// 			j = j + 1;
+		// 		}
+		// 	}
+		// 	i = i + 1;
+		// }
 	}
 
 	pub fn update_location(&mut self, entity_uuid: usize, new_value_uuid: usize) {

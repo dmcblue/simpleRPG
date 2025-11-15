@@ -28,7 +28,8 @@ impl<'app> App<'app> {
 					Field::LOCATION => {
 						// assume item for now
 						self.game.components.move_item_to(
-							self.game.components.uuids[*entity_uuid],
+							// self.game.components.uuids[*entity_uuid],
+							*entity_uuid,
 							self.game.components.get_array_id(value),
 						);
 					}

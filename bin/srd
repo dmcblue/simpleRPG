@@ -70,7 +70,7 @@ elif [[ "$command" == "debug" ]]; then
 	cd ..
 elif [[ "$command" == "run" ]]; then
 	cd game
-	cargo run
+	SRD_DEV=1 cargo run
 	cd ..
 else
 	error "No arguments given"

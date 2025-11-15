@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 #[derive(Clone, Debug)]
 pub struct Items {
+	// uuid -> quantity
 	pub _items: HashMap<usize, usize>,
 }
 
@@ -34,6 +35,10 @@ impl Items {
 				return false;
 			},
 		}
+	}
+
+	pub fn drain(&mut self) {
+		self._items.drain();
 	}
 
 	pub fn how_many(&self, item_uuid: usize) -> usize {
@@ -69,5 +74,9 @@ impl Items {
 		}
 
 		return Ok(*self._items.get(&item_uuid).unwrap());
+	}
+
+	pub fn to_hash_map(&self) -> HashMap<usize, usize> {
+		return self._items.clone();
 	}
 }

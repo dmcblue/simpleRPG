@@ -20,7 +20,12 @@ impl Platform {
 		match env::home_dir() {
 			Some(home_path) => {
 				// TODO run on different systems
-				self.save_dir = format!("{}/.local/share/simpleRPG/", home_path.display());
+				let val = env::var("SRD_DEV").unwrap();
+				if val.len() > 0 {
+					self.save_dir = format!("{}/repos/simpleRPG/saves/", home_path.display());
+				} else {
+					self.save_dir = format!("{}/.local/share/simpleRPG/", home_path.display());
+				}
 				match create_dir_all(self.save_dir.as_str()) {
 					Ok(_) => (),
 					Err(e) => panic!("{}", e),
