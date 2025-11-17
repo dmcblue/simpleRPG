@@ -4,6 +4,7 @@ HERE=$( dirname -- "$( realpath -- "$0"; )"; )
 BASE=$( realpath -- "$HERE/../" )
 TEMPLATES_DIR="$BASE/templates"
 DATA_DIR="$BASE/data"
+CACHE_FILE="$BASE/bin/_temp.yml"
 
 containsElement () (
 	local e match="$1"
@@ -11,6 +12,7 @@ containsElement () (
 	for e; do [[ "$e" == "$match" ]] && return 0; done
 	return 1
 )
+
 help () (
 	messages=(
 		"srd <command>\n"
@@ -24,14 +26,35 @@ help () (
 	)
 	printf "${messages[*]}"
 )
+
 error() (
 	local error_message=$1
 	printf "Error: $error_message\n\n"
 	help
 	exit 1
 )
+
 get_id() (
 	date +%s
+)
+
+make_cache() (
+	if [ ! -f bin/_temp.yml ]; then
+		CACHE_TIME=0
+	else
+		CACHE_TIME=$(stat -c '%Y' $CACHE_FILE)
+	fi
+
+	LATEST_FILE=$(ls -lt $DATA_DIR/*.yml | head -n 1 | awk '{print $9}')
+	LATEST_CHANGE_TIME=$(stat -c '%Y' $LATEST_FILE)
+
+	if [[ $CACHE_TIME -lt $LATEST_CHANGE_TIME ]]; then
+		echo '' > $CACHE_FILE
+		for f in $DATA_DIR/*yml; do
+			cat $f >> $CACHE_FILE
+			printf "\n---\n\n" >> $CACHE_FILE
+		done
+	fi
 )
 
 HELP_OPTIONS=("help" "--help" "-h")
@@ -72,6 +95,18 @@ elif [[ "$command" == "run" ]]; then
 	cd game
 	SRD_DEV=1 cargo run
 	cd ..
+elif [[ "$command" == "search" ]]; then
+	make_cache
+	type="${2^}"
+	# yq 'select(.type == "Conversation") | .speaker' bin/_temp.yml
+	# ag -l 'id: 1754951881'
+	for id in `yq "select(.type == \"$type\") .id" $CACHE_FILE`; do
+		for file in `ag -l "id: $id" data`; do
+			echo $file
+			pygmentize -g $file
+			echo ""
+		done
+	done
 else
 	error "No arguments given"
 fi

@@ -40,6 +40,7 @@ impl<'app> App<'app> {
 			},
 			ConversationAction::END => {
 				self.game.mode = GameMode::EXPLORE;
+				self.interface.render_hr();
 				self.game.setup_scene();
 				self.interface.render_location_detailed(&self.game);
 				self.interface.render_actions(&self.game);

@@ -13,5 +13,6 @@
 /game/target
 
 # Other
+bin/_temp.yml
 game/log/*.log
 saves/*.sv
