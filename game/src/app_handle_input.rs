@@ -172,6 +172,7 @@ impl<'app> App<'app> {
 					self.handle_play_action(Action{
 						action_type: ActionType::TAKE,
 						arg_1: Some(self.game.components.get_array_id(&item_uuid)),
+						arg_2: Some(1),
 						..Default::default()
 					});
 				}

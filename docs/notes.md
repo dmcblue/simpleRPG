@@ -1,7 +1,8 @@
 # Notes
 
-- Take action should have quantity
-- serde_yml not handling > strings
+- On conversation effects
+- General effect handling
+- Challenge interaction
 - bin/srd searching
 
 ## Application Structure

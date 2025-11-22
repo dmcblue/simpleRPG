@@ -30,7 +30,7 @@ impl Interface {
 			}
 			ActionType::LOOK => String::from("Look around"),
 			ActionType::TAKE => {
-				return format!("Take {}", game.components.names[action.arg_1.unwrap()]);
+				return format!("Take {} {}s", action.arg_2.unwrap(), game.components.names[action.arg_1.unwrap()]);
 			}
 			ActionType::TALK => {
 				return format!("Speak to {}", game.components.names[action.arg_1.unwrap()]);
@@ -71,7 +71,8 @@ impl Interface {
 			ActionType::LOOK => self.render_location_detailed(game),
 			ActionType::TAKE => {
 				self.println(format!(
-					"You put {} in your inventory",
+					"You put {} {}s in your inventory",
+					action.arg_2.unwrap(),
 					game.components.names[action.arg_1.unwrap()]
 				));
 			}

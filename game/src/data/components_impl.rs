@@ -13,7 +13,8 @@ impl Components<'_> {
 		if id < self.exits_start {
 			return false;
 		}
-		self.destinations.contains(&(id - self.exits_start))
+
+		self.destinations.len() > id - self.exits_start
 	}
 
 	pub fn is_vendor(&self, id: usize) -> bool {

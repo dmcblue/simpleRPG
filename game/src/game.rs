@@ -174,6 +174,7 @@ impl Game<'_> {
 				Action{
 					action_type: ActionType::TAKE,
 					arg_1: Some(*item_id),
+					arg_2: Some(1),
 					..Default::default()
 				}
 			);

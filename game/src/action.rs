@@ -12,7 +12,7 @@ pub enum ActionType {
 pub struct Action {
 	pub action_type: ActionType,
 	pub arg_1: Option<usize>,
-	// arg_2: Option<usize>,
+	pub arg_2: Option<usize>,
 	// arg_3: Option<usize>,
 }
 impl Default for Action {
@@ -20,7 +20,7 @@ impl Default for Action {
 		Action {
 			action_type: ActionType::LOOK,
 			arg_1: None,
-			// arg_2: None,
+			arg_2: None,
 			// arg_3: None,
 		}
 	}
