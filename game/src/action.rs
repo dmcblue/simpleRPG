@@ -15,6 +15,7 @@ pub struct Action {
 	pub arg_2: Option<usize>,
 	// arg_3: Option<usize>,
 }
+
 impl Default for Action {
 	fn default() -> Action {
 		Action {

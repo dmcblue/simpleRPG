@@ -93,10 +93,10 @@ impl Interface {
 		}
 	}
 
-	pub fn render_conversation(&mut self, conversation_node: &ConversationNode) {
+	pub fn render_conversation(&mut self, game: &Game, conversation_node: &ConversationNode) {
 		let mut i = 1;
 		for prompt in &conversation_node.prompts {
-			if prompt.enabled {
+			if *game.components.enabled.get(&prompt.id).unwrap() {
 				self.println(format!("{}. {}", i, prompt.prompt));
 
 				i = i + 1;

@@ -50,6 +50,7 @@ pub struct Save {
 	state_changes: Vec<SaveStateChange>,
 }
 
+#[derive(Debug)]
 pub struct ConversationPointer {
 	pub conversation_id: usize,
 	pub path: Vec<usize>,

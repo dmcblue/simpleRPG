@@ -4,6 +4,8 @@ use super::state::{ConversationPointer, State};
 use super::data::{
 	Components,
 	ConversationNode,
+	Event,
+	EventType,
 	Items,
 	get_start_location_id
 };
@@ -56,7 +58,7 @@ impl Game<'_> {
 		let mut pointer: &ConversationNode = &self.components.conversations[self.state.current_conversation.conversation_id];
 		for index in &self.state.current_conversation.path {
 			let mut i = index + 0;
-			while !pointer.prompts[i].enabled {
+			while !self.components.enabled.get(&pointer.prompts[i].id).unwrap() {
 				i = i + 1;
 			}
 			pointer = &pointer.prompts[i];
@@ -112,6 +114,17 @@ impl Game<'_> {
 
 		// reset the scene so list of actions updates
 		self.setup_scene();
+	}
+
+	pub fn handle_event(&mut self, event: Event) {
+		match event.event_type {
+			EventType::ENABLE_CONVERSATION => {
+				self.components.enabled.insert(
+					event.arg_1.unwrap(),
+					true
+				);
+			}
+		}
 	}
 
 	pub fn setup_scene(&mut self) {

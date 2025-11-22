@@ -26,7 +26,7 @@ pub struct Components<'a> {{
 	pub conversations: [ConversationNode; {}],
 	pub descriptions: [&'a str; {}],
 	pub destinations: [usize; {}],
-	pub enabled: [bool; {}],
+	pub enabled: HashMap<usize, bool>,
 	pub location_items: [Items; {}],
 	pub location_map: [usize; {}],
 	pub locations: [Vec<usize>; {}],
@@ -49,7 +49,7 @@ impl Components<'_> {{
 			conversations: [(); {}].map(|_| ConversationNode::new()),
 			descriptions: [\"\"; {}],
 			destinations: [0; {}],
-			enabled: [false; {}],
+			enabled: HashMap::new(),
 			location_items: [(); {}].map(|_| Items::new()),
 			location_map: [0; {}],
 			locations: [(); {}].map(|_| Vec::new()),
@@ -72,7 +72,6 @@ impl Components<'_> {{
 		counts.total - counts.conversations_start, // conversations
 		counts.total, // descriptions
 		counts.exits.len(), // destinations
-		counts.total - counts.conversations_start, // enabled
 		counts.locations.len(), // location items
 		counts.total, // location_map
 		counts.locations.len(), // locations
@@ -87,7 +86,6 @@ impl Components<'_> {{
 		counts.total - counts.conversations_start, // conversations
 		counts.total, // descriptions
 		counts.exits.len(), // destinations
-		counts.total - counts.conversations_start, // enabled
 		counts.locations.len(), // location items
 		counts.total, // location_map
 		counts.locations.len(), // locations

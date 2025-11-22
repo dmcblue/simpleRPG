@@ -18,10 +18,14 @@ impl<'app> App<'app> {
 			ConversationAction::ASK(i) => {
 				self.game.state.current_conversation.path.push(i);
 				self.interface.render_conversation_response(&self.game.get_conversation().response);
-				if self.game.get_conversation().prompts.len() < 2 {
+				for event in self.game.get_conversation().after.clone() {
+					self.game.handle_event(event);
+				}
+				if self.game.get_conversation().prompts.len() == 0 {
 					self.game.state.current_conversation.path.pop();
 				}
 				self.interface.render_conversation(
+					&self.game,
 					self.game.get_conversation()
 				);
 			},
@@ -29,6 +33,7 @@ impl<'app> App<'app> {
 				if self.game.state.current_conversation.path.len() > 0 {
 					self.game.state.current_conversation.path.pop();
 					self.interface.render_conversation(
+						&self.game,
 						self.game.get_conversation()
 					);
 				} else {
@@ -105,6 +110,7 @@ impl<'app> App<'app> {
 			},
 			GameMode::TALK => {
 				self.interface.render_conversation(
+					&self.game,
 					self.game.get_conversation()
 				);
 			},

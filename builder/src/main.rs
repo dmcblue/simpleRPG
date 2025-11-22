@@ -56,6 +56,25 @@ struct Entity {
 	prompts: Option<Vec<ConversationNode>>,
 }
 
+pub fn render_conversation(
+	file: &mut File,
+	conversation: &ConversationNode
+) {
+	let enabled_str = if conversation.enabled {
+		"true"
+	} else {
+		"false"
+	};
+	let _ = file.write_all(format!(
+		"\tcomponents.enabled.insert({}, {});\n",
+		conversation.id,
+		enabled_str,
+	).as_bytes());
+	for child in conversation.prompts.clone() {
+		render_conversation(file, &child);
+	}
+}
+
 fn main() {
 	let paths = fs::read_dir("../data").unwrap();
 
@@ -226,6 +245,10 @@ fn main() {
 				conversations_file.render_conversation(
 					&conversation,
 					String::new()
+				);
+				render_conversation(
+					&mut file,
+					&conversation,
 				);
 			}
 			conversations_file.close_root();

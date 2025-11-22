@@ -2,7 +2,7 @@ metaname: "Tavern Main Room Candle"
 metadata: []
 id: 1754094854
 type: "Item"
-name: "A candle"
+name: "candle"
 description: |
   A candle burning bright
 takeable: true

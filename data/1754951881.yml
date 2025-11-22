@@ -6,7 +6,7 @@ speaker: 1754951709
 prompts:
   - id: 1754951882
     prompt: "What do you sell?"
-    response: "Take a look."
-    after: "sell"
+    response: "This and that"
+    after: []
     enabled: true
     prompts: []
