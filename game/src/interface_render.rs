@@ -26,17 +26,19 @@ impl Interface {
 				return String::from("Check your inventory");
 			}
 			ActionType::GO => {
-				return format!("Go to {}", game.components.names[action.arg_1.unwrap()]);
+				// return format!("Go to {}", game.components.names[action.arg_1.unwrap()]);
+				return format!("Go to {}", game.components.get_name(action.arg_1.unwrap()));
 			}
 			ActionType::LOOK => String::from("Look around"),
 			ActionType::TAKE => {
-				return format!("Take {} {}s", action.arg_2.unwrap(), game.components.names[action.arg_1.unwrap()]);
+				// return format!("Take {} {}s", action.arg_2.unwrap(), game.components.names[action.arg_1.unwrap()]);
+				return format!("Take {} {}s", action.arg_2.unwrap(), game.components.get_name(action.arg_1.unwrap()));
 			}
 			ActionType::TALK => {
-				return format!("Speak to {}", game.components.names[action.arg_1.unwrap()]);
+				return format!("Speak to {}", game.components.get_name(action.arg_1.unwrap()));
 			}
 			ActionType::VEND => {
-				return format!("Buy/Sell with {}", game.components.names[action.arg_1.unwrap()]);
+				return format!("Buy/Sell with {}", game.components.get_name(action.arg_1.unwrap()));
 			}
 		}
 	}
@@ -46,13 +48,16 @@ impl Interface {
 			ActionType::CHECK_INVENTORY => {
 				let mut any = false;
 				self.println_str("In your inventory:");
-				for (entity_uuid, quantity) in game.components.location_items[game.components.inventory_id].iter() {
+				// for (entity_uuid, quantity) in game.components.location_items[game.components.inventory_id].iter() {
+				for (entity_uuid, quantity) in game.components.read_location_items(game.components.inventory_uuid).iter() {
 					if *quantity > 0 {
 						any = true;
+						let name = game.components.get_name(*entity_uuid);
 						self.println(format!(
 							" - ({}) {}",
 							*quantity,
-							game.components.names[game.components.get_array_id(entity_uuid)]
+							// game.components.names[game.components.get_array_id(entity_uuid)]
+							name
 						));
 					}
 				}
@@ -62,10 +67,13 @@ impl Interface {
 				}
 			}
 			ActionType::GO => {
-				self.println(format!("You go to {}", game.components.names[game.scene.location_id]));
-				self.println(format!("You see {}", game.components.descriptions[game.scene.location_id]));
-				for entity_id in &game.scene.entity_ids {
-					self.println(format!("{}", game.components.names[*entity_id]));
+				// self.println(format!("You go to {}", game.components.names[game.scene.location_id]));
+				self.println(format!("You go to {}", game.components.get_name(game.scene.location_uuid)));
+				// self.println(format!("You see {}", game.components.descriptions[game.scene.location_id]));
+				self.println(format!("You see {}", game.components.get_description(game.scene.location_uuid)));
+				for entity_uuid in &game.scene.entity_uuids {
+					// self.println(format!("{}", game.components.names[*entity_id]));
+					self.println(format!("{}", game.components.get_name(*entity_uuid)));
 				}
 			}
 			ActionType::LOOK => self.render_location_detailed(game),
@@ -73,14 +81,15 @@ impl Interface {
 				self.println(format!(
 					"You put {} {}s in your inventory",
 					action.arg_2.unwrap(),
-					game.components.names[action.arg_1.unwrap()]
+					// game.components.names[action.arg_1.unwrap()],
+					game.components.get_name(action.arg_1.unwrap()),
 				));
 			}
 			ActionType::TALK => {
-				self.println(format!("You turn to {} and say:", game.components.names[action.arg_1.unwrap()]));
+				self.println(format!("You turn to {} and say:", game.components.get_name(action.arg_1.unwrap())));
 			}
 			ActionType::VEND => {
-				self.println(format!("You haggle with {}:", game.components.names[action.arg_1.unwrap()]));
+				self.println(format!("You haggle with {}:", game.components.get_name(action.arg_1.unwrap())));
 			}
 		}
 	}
@@ -96,7 +105,8 @@ impl Interface {
 	pub fn render_conversation(&mut self, game: &Game, conversation_node: &ConversationNode) {
 		let mut i = 1;
 		for prompt in &conversation_node.prompts {
-			if *game.components.enabled.get(&prompt.id).unwrap() {
+			// if *game.components.enabled.get(&prompt.id).unwrap() {
+			if game.components.is_enabled(prompt.uuid) {
 				self.println(format!("{}. {}", i, prompt.prompt));
 
 				i = i + 1;
@@ -112,9 +122,9 @@ impl Interface {
 	}
 
 	pub fn render_location_detailed(&mut self, game: &Game) {
-		self.println(format!("You see {}", game.components.descriptions[game.scene.location_id]));
-		for entity_id in &game.scene.entity_ids {
-			self.println(format!("{}", game.components.descriptions[*entity_id]));
+		self.println(format!("You see {}", game.components.get_description(game.scene.location_uuid)));
+		for entity_uuid in &game.scene.entity_uuids {
+			self.println(format!("{}", game.components.get_description(*entity_uuid)));
 		}
 	}
 
@@ -134,14 +144,14 @@ impl Interface {
 	pub fn render_vending(&mut self, vending: &Vending, components: &Components) {
 		let mut i = 1;
 		for vend_item in &vending.items {
-			components.names[components.get_array_id(&vend_item.id)];
+			// components.names[components.get_array_id(&vend_item.id)];
 			self.println(
 				format!(
 					"{}. {} - {} {}",
 					i,
-					components.names[components.get_array_id(&vend_item.id)], //uuid?
+					components.get_name(vend_item.uuid), //uuid?
 					&vend_item.price.quantity,
-					components.names[components.get_array_id(&vend_item.price.item_uuid)],
+					components.get_name(vend_item.price.item_uuid),
 				)
 			);
 

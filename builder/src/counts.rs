@@ -21,7 +21,7 @@ pub struct Counts {
 	pub vending_ether_uuid: usize,
 	pub vending_start: usize,
 	pub vending_end: usize,
-	pub starting_location_id: usize,
+	pub starting_location_uuid: usize,
 	pub total: usize,
 }
 
@@ -48,7 +48,7 @@ impl Counts {
 			vending_ether_uuid: 0,
 			vending_start: 0,
 			vending_end: 0,
-			starting_location_id: 0,
+			starting_location_uuid: 0,
 			total: 0,
 		}
 	}

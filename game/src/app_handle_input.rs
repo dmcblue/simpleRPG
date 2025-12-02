@@ -115,8 +115,10 @@ impl<'app> App<'app> {
 				);
 			},
 			GameMode::VEND => {
+				let vending = self.game.components.get_vending(self.game.state.current_vending_uuid);
 				self.interface.render_vending(
-					&self.game.components.vendings[self.game.state.current_vending_index],
+					// &self.game.components.vendings[self.game.state.current_vending_index],
+					&self.game.components.read_vending(self.game.state.current_vending_uuid),
 					&self.game.components
 				);
 			}
@@ -134,58 +136,49 @@ impl<'app> App<'app> {
 			},
 			VendingAction::BUY(i) => {
 				let item =
-					self.game.components.
-						vendings[self.game.state.current_vending_index].
+					self.game.components.get_vending(self.game.state.current_vending_uuid).
 						items.get(i).unwrap();
-				let item_uuid = item.id;
+				let item_uuid = item.uuid;
 				let price = item.price;
 				let quantity =
-					self.game.components.
-					location_items[self.game.components.inventory_id].
+					self.game.components.get_inventory().
 					how_many(price.item_uuid);
 
 				if price.quantity > quantity {
 					// @TODO turn this into error handling or something
 					self.interface.println(format!(
 						"You do not have enough {}.",
-						self.game.components.names[
-							self.game.components.get_array_id(&price.item_uuid)
-						]
+						self.game.components.get_name(price.item_uuid)
 					));
 				} else {
 					// pay cost
 					self.interface.println(format!(
 						"Paying {} {} for {} {}",
 						price.quantity,
-						self.game.components.names[
-							self.game.components.get_array_id(&price.item_uuid)
-						],
+						self.game.components.get_name(price.item_uuid),
 						1,
-						self.game.components.names[
-							self.game.components.get_array_id(&item_uuid)
-						],
+						self.game.components.get_name(item_uuid)
 					));
 					// @TODO? Should this be a transact action instead?
 					// remove from vending list
 					// @ TODO should the vending list come from a location?
 					// that might be hard to track prices
-					self.game.components.
-						vendings[self.game.state.current_vending_index].
+					self.game.components.get_vending(self.game.state.current_vending_uuid).
 						items.remove(i);
-					let _ = self.game.components.
-						location_items[self.game.components.inventory_id].
+					let _ =
+						self.game.components.get_inventory().
 						remove(price.item_uuid, price.quantity);
 					self.handle_play_action(Action{
 						action_type: ActionType::TAKE,
-						arg_1: Some(self.game.components.get_array_id(&item_uuid)),
+						arg_1: Some(item_uuid),
 						arg_2: Some(1),
 						..Default::default()
 					});
 				}
 
-				if self.game.components.vendings[self.game.state.current_vending_index].items.len() > 0 {
+				if self.game.components.read_vending(self.game.state.current_vending_uuid).items.len() > 0 {
 					self.interface.render_vending(
-						&self.game.components.vendings[self.game.state.current_vending_index],
+						&self.game.components.read_vending(self.game.state.current_vending_uuid),
 						&self.game.components
 					);
 				} else {

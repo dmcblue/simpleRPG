@@ -1,13 +1,15 @@
 // Writes out the conversations data
 
-// int
+// std
 use std::fs::File;
 use std::io::Write;
 use std::clone::Clone;
-use regex::Regex;
 
 // ext
 use serde::{Serialize, Deserialize};
+use regex::Regex;
+
+// int
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ConversationNode {
@@ -51,7 +53,7 @@ impl ConversationsFile {
 		let _ = self.file_handle.write_all(
 			format!(
 				"\t\tConversationNode{{\n\
-				\t\t\tid: {},\n\
+				\t\t\tuuid: {},\n\
 				\t\t\tenabled: true,\n\
 				\t\t\tis_root: true,\n\
 				\t\t\tafter: Vec::new(),\n\
@@ -105,7 +107,7 @@ impl ConversationsFile {
 		let _ = self.file_handle.write_all(
 			format!(
 				"{}\t\t\t\tConversationNode{{\n\
-				{}\t\t\t\t\tid: {},\n\
+				{}\t\t\t\t\tuuid: {},\n\
 				{}\t\t\t\t\tenabled: {},\n\
 				{}\t\t\t\t\tis_root: false,\n\
 				{}\t\t\t\t\tafter: {},\n\

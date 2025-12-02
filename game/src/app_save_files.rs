@@ -30,7 +30,7 @@ impl<'app> App<'app> {
 						self.game.components.move_item_to(
 							// self.game.components.uuids[*entity_uuid],
 							*entity_uuid,
-							self.game.components.get_array_id(value),
+							self.game.components.get_array_id(*value),
 						);
 					}
 				}
@@ -45,7 +45,11 @@ impl<'app> App<'app> {
 
 		match File::create(save_path) {
 			Ok(save_file) => {
-				let _ = write!(&save_file, "{}", self.game.state.state_changes_to_file_content(name, &self.game.components));
+				let _ = write!(
+					&save_file, 
+					"{}", 
+					self.game.state.state_changes_to_file_content(name, &mut self.game.components)
+				);
 			},
 			Err(e) => { log::info!("{:?}", e); }
 		}

@@ -108,7 +108,10 @@ impl<'app> App<'app> {
 						}
 					},
 					GameMode::VEND => {
-						match self.interface.check_input_vend(&self.game, &self.game.components.vendings[self.game.state.current_vending_index]) {
+						match self.interface.check_input_vend(
+							&self.game, 
+							self.game.components.read_vending(self.game.state.current_vending_uuid)
+						) {
 							Ok(vending_action) => {
 								self.handle_vending_action(vending_action);
 							},

@@ -2,7 +2,7 @@ use super::event::Event;
 
 #[derive(Debug)]
 pub struct ConversationNode {
-	pub id: usize,
+	pub uuid: usize,
 	pub is_root: bool,
 	pub after: Vec<Event>,
 	pub enabled: bool,
@@ -14,7 +14,7 @@ pub struct ConversationNode {
 impl ConversationNode {
 	pub fn new() -> Self {
 		return Self {
-			id: 0,
+			uuid: 0,
 			enabled: true,
 			is_root: true,
 			after: Vec::new(),

@@ -33,27 +33,31 @@ impl VendingsFile {
 
 	pub fn begin(&mut self) {
 		let _ = self.file_handle.write_all(
-			b"use super::components::{Components};\n\
+			b"use std::collections::HashMap;\n\
+			use super::components::{Components};\n\
 			use super::vending::{Price, Vending, VendItem};\n\
 			\n\
 			pub fn load_vendings(components: &mut Components) {\n\
-			\tcomponents.vendings = [\n"
+			\tcomponents.vendings = HashMap::new();\n"
 		);
 	}
 
 	pub fn end(&mut self) {
 		let _ = self.file_handle.write_all(
-			b"\t];\n}\n"
+			b"}\n"
 		);
 	}
 
 	pub fn render_vending(&mut self, vending: &Vending) {
 		let _ = self.file_handle.write_all(
 			format!(
-				"\t\tVending{{\n\
-				\t\t\tid: {},\n\
+				"\tcomponents.vendings.insert(\n\
+				\t\t{},\n\
+				\t\tVending{{\n\
+				\t\t\tuuid: {},\n\
 				\t\t\titems: vec![\n\
 				",
+				vending.id,
 				vending.id
 			).as_bytes()
 		);
@@ -61,7 +65,7 @@ impl VendingsFile {
 			let _ = self.file_handle.write_all(
 				format!(
 					"\t\t\t\tVendItem{{\n\
-					\t\t\t\t\tid: {},\n\
+					\t\t\t\t\tuuid: {},\n\
 					\t\t\t\t\tprice: {},\n\
 					\t\t\t\t}}\n",
 					vend_item.id,
@@ -70,7 +74,9 @@ impl VendingsFile {
 			);
 		}
 		let _ = self.file_handle.write_all(
-			b"\t\t\t]\n\t\t},\n"
+			b"\t\t\t]\n\
+			\t\t}\n\
+			\t);\n"
 		);
 	}
 

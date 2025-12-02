@@ -6,7 +6,7 @@ use std::io::Write;
 
 use super::counts::Counts;
 
-pub fn write_components_file(counts: &Counts, inventory_id: usize /* not uuid */) {
+pub fn write_components_file(counts: &Counts, inventory_uuid: usize /* not uuid */) {
 	let mut file = File::create("../game/src/data/components.rs").unwrap();
 	let _ = file.write_all(format!("
 use std::collections::HashMap;
@@ -24,6 +24,7 @@ use super::vending::{{Price, Vending, VendItem}};
 
 pub struct Components<'a> {{
 	pub conversations: [ConversationNode; {}],
+	pub conversations_start: usize,
 	pub descriptions: [&'a str; {}],
 	pub destinations: [usize; {}],
 	pub enabled: HashMap<usize, bool>,
@@ -31,22 +32,23 @@ pub struct Components<'a> {{
 	pub location_map: [usize; {}],
 	pub locations: [Vec<usize>; {}],
 	pub names: [&'a str; {}],
-	pub owns_conversation: [Option<usize>; {}],
+	pub owns_conversation: [Option<usize>; {}], // entity_index => conversation_index (ie not entity)
 	pub owns_vending: [Option<usize>; {}],
 	pub exits_start: usize,
 	pub items_start: usize,
 	pub people_start: usize,
-	pub inventory_id: usize,
+	pub inventory_uuid: usize,
 	pub takeable: [bool; {}],
 	pub uuid_map: HashMap<usize, usize>,
 	pub uuids: [usize; {}],
-	pub vendings: [Vending; {}],
+	pub vendings: HashMap<usize, Vending>,
 }}
 
 impl Components<'_> {{
 	pub fn new() -> Self {{
 		return Components {{
 			conversations: [(); {}].map(|_| ConversationNode::new()),
+			conversations_start: {},
 			descriptions: [\"\"; {}],
 			destinations: [0; {}],
 			enabled: HashMap::new(),
@@ -59,11 +61,11 @@ impl Components<'_> {{
 			exits_start: {},
 			items_start: {},
 			people_start: {},
-			inventory_id: {},
+			inventory_uuid: {},
 			takeable: [false; {}],
 			uuid_map: HashMap::new(),
 			uuids: [0; {}],
-			vendings: [(); {}].map(|_| Vending::new()),
+			vendings: HashMap::new(),
 		}};
 	}}
 }}
@@ -80,10 +82,10 @@ impl Components<'_> {{
 		counts.total, // owns_vending
 		counts.items.len(), // takeable
 		counts.total, // uuids
-		counts.vending.len(), // vendings
 
 		// Component init
 		counts.total - counts.conversations_start, // conversations
+		counts.conversations_start, // conversations_start
 		counts.total, // descriptions
 		counts.exits.len(), // destinations
 		counts.locations.len(), // location items
@@ -95,9 +97,9 @@ impl Components<'_> {{
 		counts.exits_start, // exists start
 		counts.items_start, // items_start
 		counts.people_start, // people_start
-		inventory_id, // inventory_id
+		inventory_uuid, // inventory_id
 		counts.items.len(), // takeable
 		counts.total, // uuids
-		counts.vending.len(), // vendings
+		// counts.vending.len(), // vendings
 	).as_bytes());
 }

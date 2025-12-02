@@ -1,243 +1,222 @@
 mod components;
 mod conversations;
 mod counts;
+mod entities;
+mod main_file;
 mod vending;
 
 // std
-use std::fs;
-use std::fs::File;
+use std::fs::{
+	File,
+	metadata, 
+	read_dir,
+	read_to_string
+};
 use std::io::Write;
 use std::collections::HashMap;
 use std::clone::Clone;
 
 // ext
-use serde::{Serialize, Deserialize};
 
 // int
 use components::{write_components_file};
-use conversations::{ConversationNode, ConversationsFile};
+use conversations::{
+	// ConversationNode, 
+	ConversationsFile
+};
 use counts::Counts;
-use vending::{Vending, VendingsFile, VendItem};
+use entities::{
+	Entity,
+	ENTITY_TYPE_CONVERSATION,
+	ENTITY_TYPE_EXIT,
+	ENTITY_TYPE_ITEM,
+	ENTITY_TYPE_LOCATION,
+	ENTITY_TYPE_PERSON,
+	ENTITY_TYPE_VENDING,
+};
+use main_file::MainFile;
+use vending::{
+	Vending, 
+	VendingsFile, 
+	// VendItem
+};
 
-const ENTITY_TYPE_CONVERSATION: &str = "Conversation";
-const ENTITY_TYPE_EXIT: &str = "Exit";
-const ENTITY_TYPE_ITEM: &str = "Item";
-const ENTITY_TYPE_LOCATION: &str = "Location";
-const ENTITY_TYPE_PERSON: &str = "Person";
-const ENTITY_TYPE_VENDING: &str = "Vending";
+fn load_entities_from_dir(builder: &mut Builder, dir_name: &str) {
+	let paths = read_dir(dir_name).unwrap();
+	for path in paths {
+		let file_path = path.unwrap().path();
+        if !metadata(&file_path).unwrap().is_dir() {
+			let contents = read_to_string(file_path).unwrap();
+			let entity: Entity = serde_saphyr::from_str(&contents).unwrap();
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
-struct ItemSlot {
-	item_id: usize,
-	quantity: usize,
+			if entity.entity_type == "Game" {
+				builder.counts.starting_location_uuid = entity.location.unwrap();
+			} else {
+				let uuid: usize = entity.id.unwrap();
+				match entity.entity_type.as_str() {
+					ENTITY_TYPE_CONVERSATION => { builder.counts.conversations.push(uuid); },
+					ENTITY_TYPE_EXIT => { builder.counts.exits.push(uuid); },
+					ENTITY_TYPE_ITEM => { builder.counts.items.push(uuid); },
+					ENTITY_TYPE_LOCATION => { builder.counts.locations.push(uuid); },
+					ENTITY_TYPE_PERSON => { builder.counts.people.push(uuid); },
+					ENTITY_TYPE_VENDING => { builder.counts.vending.push(uuid); },
+					_ => ()
+				}
+
+				if entity.metaname == "Inventory" {
+					builder.counts.inventory_uuid = uuid;
+				} else if entity.metaname == "Vending Ether" {
+					builder.counts.vending_ether_uuid = uuid;
+				}
+				builder.entities.insert(uuid, entity);
+			}
+		}
+	}
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
-struct Entity {
-	#[serde(rename = "type")]
-	entity_type: String,
-	metaname: String,
-	metadata: Vec<String>,
-	id: Option<usize>,
-	//#[serde(default)]
-	name: Option<String>,
-	description: Option<String>,
-	// Location specific
-	items: Option<Vec<ItemSlot>>,
-	// Exit specific
-	location: Option<usize>,
-	takeable: Option<bool>,
-	to: Option<usize>,
-	// Vending specific
-	vendables: Option<Vec<VendItem>>,
-	vendor: Option<usize>,
-	// Conversation specific
-	speaker: Option<usize>,
-	prompts: Option<Vec<ConversationNode>>,
+struct Builder {
+	counts: Counts,
+	entities: HashMap<usize, Entity>,
+	main_file: MainFile,
+	uuid_to_index: HashMap<usize, usize>,
+	index_to_uuid: HashMap<usize, usize>,
 }
 
-pub fn render_conversation(
-	file: &mut File,
-	conversation: &ConversationNode
-) {
-	let enabled_str = if conversation.enabled {
-		"true"
-	} else {
-		"false"
-	};
-	let _ = file.write_all(format!(
-		"\tcomponents.enabled.insert({}, {});\n",
-		conversation.id,
-		enabled_str,
-	).as_bytes());
-	for child in conversation.prompts.clone() {
-		render_conversation(file, &child);
+impl Builder {
+	pub fn add_cache_item(&mut self, entity_uuid: usize) {
+		self.uuid_to_index.insert(entity_uuid, self.counts.total);
+		self.index_to_uuid.insert(self.counts.total, entity_uuid);
+		self.counts.total = self.counts.total + 1;
+	}
+
+	pub fn build_cache(&mut self) {
+		self.counts.locations_start = self.counts.total;
+		for entity_uuid in self.counts.locations.iter() {
+			self.uuid_to_index.insert(*entity_uuid, self.counts.total);
+			self.index_to_uuid.insert(self.counts.total, *entity_uuid);
+			self.counts.total = self.counts.total + 1;
+		}
+		self.counts.locations_end = self.counts.total;
+		self.counts.items_start = self.counts.total;
+		for entity_uuid in self.counts.items.iter() {
+			self.uuid_to_index.insert(*entity_uuid, self.counts.total);
+			self.index_to_uuid.insert(self.counts.total, *entity_uuid);
+			self.counts.total = self.counts.total + 1;
+		}
+		self.counts.items_end = self.counts.total;
+		self.counts.people_start = self.counts.total;
+		for entity_uuid in self.counts.people.iter() {
+			self.uuid_to_index.insert(*entity_uuid, self.counts.total);
+			self.index_to_uuid.insert(self.counts.total, *entity_uuid);
+			self.counts.total = self.counts.total + 1;
+		}
+		self.counts.people_end = self.counts.total;
+		self.counts.exits_start = self.counts.total;
+		for entity_uuid in self.counts.exits.iter() {
+			self.uuid_to_index.insert(*entity_uuid, self.counts.total);
+			self.index_to_uuid.insert(self.counts.total, *entity_uuid);
+			self.counts.total = self.counts.total + 1;
+		}
+		self.counts.exits_end = self.counts.total;
+		self.counts.vending_start = self.counts.total;
+		for entity_uuid in self.counts.vending.iter() {
+			self.uuid_to_index.insert(*entity_uuid, self.counts.total);
+			self.index_to_uuid.insert(self.counts.total, *entity_uuid);
+			self.counts.total = self.counts.total + 1;
+		}
+		self.counts.vending_end = self.counts.total;
+		self.counts.conversations_start = self.counts.total;
+		for entity_uuid in self.counts.conversations.iter() {
+			self.uuid_to_index.insert(*entity_uuid, self.counts.total);
+			self.index_to_uuid.insert(self.counts.total, *entity_uuid);
+			self.counts.total = self.counts.total + 1;
+		}
+		self.counts.conversations_end = self.counts.total;
 	}
 }
 
 fn main() {
-	let paths = fs::read_dir("../data").unwrap();
-
-	let mut file = File::create("../game/src/data/main.rs").unwrap();
-	let _ = file.write_all(
-		b"use super::components::Components;\n\
-		// use super::vending::{Price, Vending, VendItem};\n\
-		\n\
-		pub fn load_data(components: &mut Components) {\n"
-	);
+	let mut builder: Builder = Builder{
+		counts: Counts::new(),
+		entities: HashMap::new(),
+		main_file: MainFile::new(),
+		uuid_to_index: HashMap::new(),
+		index_to_uuid: HashMap::new(),
+	};
+	builder.main_file.begin();
 	let mut conversations_file = ConversationsFile::new();
 	conversations_file.begin();
 	let mut vendings_file = VendingsFile::new();
 	vendings_file.begin();
-	let mut counts: Counts = Counts::new();
-	let mut entities: HashMap<usize, Entity> = HashMap::new();
 	let mut vending_item_ids: Vec<usize> = Vec::new();
 
-	for path in paths {
-		let file_path = path.unwrap().path();
-		let contents = fs::read_to_string(file_path).unwrap();
-		let entity: Entity = serde_saphyr::from_str(&contents).unwrap();
+	load_entities_from_dir(&mut builder, "../data");
 
-		if entity.entity_type == "Game" {
-			counts.starting_location_id = entity.location.unwrap();
-		} else {
-			let uuid: usize = entity.id.unwrap();
-			match entity.entity_type.as_str() {
-				ENTITY_TYPE_CONVERSATION => { counts.conversations.push(uuid); },
-				ENTITY_TYPE_EXIT => { counts.exits.push(uuid); },
-				ENTITY_TYPE_ITEM => { counts.items.push(uuid); },
-				ENTITY_TYPE_LOCATION => { counts.locations.push(uuid); },
-				ENTITY_TYPE_PERSON => { counts.people.push(uuid); },
-				ENTITY_TYPE_VENDING => { counts.vending.push(uuid); },
-				_ => ()
-			}
-
-			if entity.metaname == "Inventory" {
-				counts.inventory_uuid = uuid;
-			} else if entity.metaname == "Vending Ether" {
-				counts.vending_ether_uuid = uuid;
-			}
-			entities.insert(uuid, entity);
-		}
-	}
-
-	let mut uuid_to_index: HashMap<usize, usize> = HashMap::new();
 	let mut conversation_index = 0;
 	let mut vending_index = 0;
 
-	counts.locations_start = counts.total;
-	for entity_id in counts.locations.iter() {
-		uuid_to_index.insert(*entity_id, counts.total);
-		counts.total = counts.total + 1;
-	}
-	counts.locations_end = counts.total;
-	counts.items_start = counts.total;
-	for entity_id in counts.items.iter() {
-		uuid_to_index.insert(*entity_id, counts.total);
-		counts.total = counts.total + 1;
-	}
-	counts.items_end = counts.total;
-	counts.people_start = counts.total;
-	for entity_id in counts.people.iter() {
-		uuid_to_index.insert(*entity_id, counts.total);
-		counts.total = counts.total + 1;
-	}
-	counts.people_end = counts.total;
-	counts.exits_start = counts.total;
-	for entity_id in counts.exits.iter() {
-		uuid_to_index.insert(*entity_id, counts.total);
-		counts.total = counts.total + 1;
-	}
-	counts.exits_end = counts.total;
-	counts.vending_start = counts.total;
-	for entity_id in counts.vending.iter() {
-		uuid_to_index.insert(*entity_id, counts.total);
-		counts.total = counts.total + 1;
-	}
-	counts.vending_end = counts.total;
-	counts.conversations_start = counts.total;
-	for entity_id in counts.conversations.iter() {
-		uuid_to_index.insert(*entity_id, counts.total);
-		counts.total = counts.total + 1;
-	}
-	counts.conversations_end = counts.total;
-	for (uuid, entity) in entities {
-		let array_index = *uuid_to_index.get(&uuid).unwrap();
+	builder.build_cache();
+
+	for (uuid, entity) in builder.entities {
+		let array_index = *builder.uuid_to_index.get(&uuid).unwrap();
 		// all non-conversations and non-vending
-		if array_index < counts.vending_start {
-			let _ = file.write_all(
+		if array_index < builder.counts.vending_start {
+			builder.main_file.write_all(
 				format!(
 					"\tcomponents.uuid_map.insert({}, {});\n",
 					uuid,
 					array_index,
-				).as_bytes()
+				)
 			);
-			let _ = file.write_all(
+			builder.main_file.write_all(
 				format!(
 					"\tcomponents.uuids[{}] = {};\n",
 					array_index,
 					uuid
-				).as_bytes()
+				)
 			);
-			let _ = file.write_all(
+			builder.main_file.write_all(
 				format!(
 					"\tcomponents.names[{}] = \"{}\";\n",
 					array_index,
 					str::replace(entity.name.clone().unwrap().as_str(), "\"", "\\\"")
-				).as_bytes()
+				)
 			);
-			let _ = file.write_all(
+			builder.main_file.write_all(
 				format!(
 					"\tcomponents.descriptions[{}] = \"{}\";\n",
 					array_index,
 					str::replace(entity.description.unwrap().trim(), "\"", "\\\"")
-				).as_bytes()
+				)
 			);
 
 			// non-locations
-			if array_index >= counts.items_start {
+			if array_index >= builder.counts.items_start {
 
 			}
 
-			if array_index >= counts.locations_start && array_index < counts.locations_end {
-				// let _ = file.write_all(
-				// 	format!(
-				// 		"\tcomponents.location_items[{}] = vec![{}];\n",
-				// 		array_index,
-				// 		entity.items.clone().unwrap().iter().
-				// 			map(|id| format!("{}", *uuid_to_index.get(&id).unwrap())).
-				// 			collect::<Vec<_>>().
-				// 			join(", ")
-				// 	).as_bytes()
-				// );
-				// @TODO find a way to initialize entire hashmap with data
-				// let solar_distance = HashMap::from([
-				// 	("Mercury", 0.4),
-				// 	("Venus", 0.7),
-				// 	("Earth", 1.0),
-				// 	("Mars", 1.5),
-				// ]);
+			if array_index >= builder.counts.locations_start && array_index < builder.counts.locations_end {
 				for item_slot in entity.items.unwrap() {
-					let _ = file.write_all(
+					builder.main_file.write_all(
 						format!(
 							"\tcomponents.location_items[{}].add({}, {});\n",
 							array_index,
 							item_slot.item_id,
 							item_slot.quantity
-						).as_bytes()
+						)
 					);
 				}
 			}
 		}
 
 		// conversations only
-		if array_index >= counts.conversations_start {
-			let _ = file.write_all(
+		if array_index >= builder.counts.conversations_start {
+			builder.main_file.write_all(
 				format!(
 					"\tcomponents.owns_conversation[{}] = Some({});\n",
-					uuid_to_index.get(&entity.speaker.unwrap()).unwrap(),
-					conversation_index, // array_index,
-				).as_bytes()
+					builder.uuid_to_index.get(&entity.speaker.unwrap()).unwrap(),
+					builder.index_to_uuid.get(&conversation_index).unwrap(),
+				)
 			);
 
 			conversations_file.open_root(uuid);
@@ -246,22 +225,19 @@ fn main() {
 					&conversation,
 					String::new()
 				);
-				render_conversation(
-					&mut file,
-					&conversation,
-				);
+				builder.main_file.render_conversation(&conversation);
 			}
 			conversations_file.close_root();
 			conversation_index = conversation_index + 1;
 		}
 		// vending only
-		else if array_index >= counts.vending_start {
-			let _ = file.write_all(
+		else if array_index >= builder.counts.vending_start {
+			builder.main_file.write_all(
 				format!(
 					"\tcomponents.owns_vending[{}] = Some({});\n",
-					uuid_to_index.get(&entity.vendor.unwrap()).unwrap(),
+					builder.uuid_to_index.get(&entity.vendor.unwrap()).unwrap(),
 					vending_index, // array_index,
-				).as_bytes()
+				)
 			);
 			let vending = Vending {
 				id: uuid,
@@ -274,90 +250,76 @@ fn main() {
 			vending_index = vending_index + 1;
 		}
 		// exits only
-		else if array_index >= counts.exits_start {
-			let _ = file.write_all(
+		else if array_index >= builder.counts.exits_start {
+			builder.main_file.write_all(
 				format!(
 					"\tcomponents.locations[{}].push({});\n",
-					uuid_to_index.get(&entity.location.unwrap()).unwrap(),
-					array_index
-				).as_bytes()
+					builder.uuid_to_index.get(&entity.location.unwrap()).unwrap(),
+					builder.index_to_uuid.get(&array_index).unwrap(),
+				)
 			);
-			let _ = file.write_all(
+			builder.main_file.write_all(
 				format!(
 					"\tcomponents.location_map[{}] = {};\n",
 					array_index,
-					uuid_to_index.get(&entity.location.unwrap()).unwrap()
-				).as_bytes()
+					entity.location.unwrap(),
+				)
 			);
-			let _ = file.write_all(
+			builder.main_file.write_all(
 				format!(
 					"\tcomponents.destinations[{}] = {};\n",
-					array_index - counts.exits_start,
-					uuid_to_index.get(&entity.to.unwrap()).unwrap()
-				).as_bytes()
+					array_index - builder.counts.exits_start,
+					entity.to.unwrap(),
+				)
 			);
 		}
 		// people only
-		else if array_index >= counts.people_start {
-			let _ = file.write_all(
+		else if array_index >= builder.counts.people_start {
+			builder.main_file.write_all(
 				format!(
 					"\tcomponents.locations[{}].push({});\n",
-					uuid_to_index.get(&entity.location.unwrap()).unwrap(),
-					array_index
-				).as_bytes()
+					builder.uuid_to_index.get(&entity.location.unwrap()).unwrap(),
+					builder.index_to_uuid.get(&array_index).unwrap()
+				)
 			);
-			let _ = file.write_all(
+			builder.main_file.write_all(
 				format!(
 					"\tcomponents.location_map[{}] = {};\n",
 					array_index,
-					uuid_to_index.get(&entity.location.unwrap()).unwrap()
-				).as_bytes()
+					entity.location.unwrap()
+				)
 			);
 		}
 		// items only
-		else if array_index >= counts.items_start {
-			let _ = file.write_all(
+		else if array_index >= builder.counts.items_start {
+			builder.main_file.write_all(
 				format!(
 					"\tcomponents.takeable[{}] = {};\n",
-					array_index - counts.items_start,
+					array_index - builder.counts.items_start,
 					&entity.takeable.unwrap()
-				).as_bytes()
+				)
 			);
 		}
 
-		let _ = file.write_all(
-			"\n".as_bytes()
+		builder.main_file.write_all(
+			"\n".to_string()
 		);
 	}
 
 	// inefficient
-	let vending_location_index = uuid_to_index.get(&counts.vending_ether_uuid).unwrap();
+	let vending_location_index = builder.uuid_to_index.get(&builder.counts.vending_ether_uuid).unwrap();
 	for vending_item_id in vending_item_ids {
-		// let _ = file.write_all(
-		// 	format!(
-		// 		"\tcomponents.location_items[{}].push({});\n",
-		// 		vending_location_index,
-		// 		uuid_to_index.get(&vending_item_id).unwrap()
-		// 	).as_bytes()
-		// );
-		let _ = file.write_all(
+		builder.main_file.write_all(
 			format!(
 				"\tcomponents.location_items[{}].add({}, 1);\n",
 				vending_location_index,
-				// uuid_to_index.get(&vending_item_id).unwrap()
 				vending_item_id
-			).as_bytes()
+			)
 		);
 	}
 
 	conversations_file.end();
 	vendings_file.end();
-
-	let _ = file.write_all(
-		format!(
-			"}}\n\npub fn get_start_location_id() -> usize {{ {} }}",
-			uuid_to_index.get(&counts.starting_location_id).unwrap()
-		).as_bytes()
-	);
-	write_components_file(&counts, *uuid_to_index.get(&counts.inventory_uuid).unwrap());
+	builder.main_file.end(builder.counts.starting_location_uuid);
+	write_components_file(&builder.counts, builder.counts.inventory_uuid);
 }

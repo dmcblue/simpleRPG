@@ -7,7 +7,7 @@ use super::data::{
 	Event,
 	EventType,
 	Items,
-	get_start_location_id
+	get_start_location_uuid
 };
 use super::game_mode::GameMode;
 use super::scene::Scene;
@@ -37,17 +37,17 @@ impl Game<'_> {
 			components: Components::new(),
 			mode: GameMode::EXPLORE,
 			scene: Scene {
-				location_id: 0,
-				entity_ids: Vec::new(),
+				location_uuid: 0,
+				entity_uuids: Vec::new(),
 				actions: Vec::new(),
 			},
 			state: State {
 				current_conversation: ConversationPointer {
-					conversation_id: 0,
+					conversation_uuid: 0,
 					path: Vec::new(),
 				},
-				current_location_id: get_start_location_id(),
-				current_vending_index: 0,
+				current_location_uuid: get_start_location_uuid(),
+				current_vending_uuid: 0,
 				last_action_type: ActionType::GO,
 				state_changes: HashMap::new()
 			}
@@ -55,14 +55,17 @@ impl Game<'_> {
 	}
 
 	pub fn get_conversation(&self) -> &ConversationNode {
-		let mut pointer: &ConversationNode = &self.components.conversations[self.state.current_conversation.conversation_id];
+		let mut pointer: &ConversationNode = 
+			self.components.get_conversation(self.state.current_conversation.conversation_uuid);
+
 		for index in &self.state.current_conversation.path {
 			let mut i = index + 0;
-			while !self.components.enabled.get(&pointer.prompts[i].id).unwrap() {
+			while !self.components.is_enabled(pointer.prompts[i].uuid) {	
 				i = i + 1;
 			}
 			pointer = &pointer.prompts[i];
 		}
+
 		return pointer;
 	}
 
@@ -71,44 +74,35 @@ impl Game<'_> {
 		match action.action_type {
 			ActionType::CHECK_INVENTORY => (),
 			ActionType::GO => {
-				self.state.current_location_id =
-					self.components.destinations[action.arg_1.unwrap() - self.components.exits_start]
+				self.state.current_location_uuid =
+					self.components.get_destination(action.arg_1.unwrap());
 			},
 			ActionType::LOOK => (),
 			ActionType::TAKE => {
-				let id = action.arg_1.unwrap();
-				self.components.move_item_to(self.components.uuids[id], self.components.inventory_id);
+				let uuid = action.arg_1.unwrap();
+				self.components.move_item_to(uuid, self.components.inventory_uuid);
 				// record change to world state
 				self.state.update_location(
-					self.components.uuids[id],
-					self.components.uuids[self.components.inventory_id]
+					uuid,
+					self.components.inventory_uuid
 				);
 			},
 			ActionType::TALK => {
-				let speaker_id = action.arg_1.unwrap();
-				match self.components.owns_conversation[speaker_id] {
-					Some(conversation_id) => {
-						self.state.current_conversation.conversation_id = conversation_id;
+				let speaker_uuid = action.arg_1.unwrap();
+				match self.components.get_conversation_by_speaker(speaker_uuid) {
+					Some(converstaion_node) => {
+						self.state.current_conversation.conversation_uuid = converstaion_node.uuid;
 						self.state.current_conversation.path.clear();
 						self.mode = GameMode::TALK;
 					},
-					None => {
-						log::info!("Oh my gosh no");
-					}
+					None => {}
 				}
 			},
 			ActionType::VEND => {
-				let vendor_id = action.arg_1.unwrap();
-				match self.components.owns_vending[vendor_id] {
-					Some(vending_id) => {
-						// DAN HERE VEND
-						self.state.current_vending_index = vending_id;
-						self.mode = GameMode::VEND;
-					},
-					None => {
-						log::info!("Oh my gosh no");
-					}
-				}
+				let vendor_uuid = action.arg_1.unwrap();
+				let vending = self.components.get_vending(vendor_uuid);
+				self.state.current_vending_uuid = vending.uuid;
+				self.mode = GameMode::VEND;
 			},
 		}
 
@@ -119,34 +113,30 @@ impl Game<'_> {
 	pub fn handle_event(&mut self, event: Event) {
 		match event.event_type {
 			EventType::ENABLE_CONVERSATION => {
-				self.components.enabled.insert(
-					event.arg_1.unwrap(),
-					true
-				);
+				self.components.set_enabled(event.arg_1.unwrap(),  true);
 			}
 		}
 	}
 
 	pub fn setup_scene(&mut self) {
-		let entity_ids: Vec<usize> = self.components.locations[self.state.current_location_id].to_vec();
-		self.scene.location_id = self.state.current_location_id;
-		self.scene.entity_ids = entity_ids.clone();
-		let exit_ids: Vec<usize> = entity_ids.clone(). //performance
+		let entity_uuids: Vec<usize> = self.components.get_location(self.state.current_location_uuid).to_vec();
+		self.scene.location_uuid = self.state.current_location_uuid;
+		self.scene.entity_uuids = entity_uuids.clone();
+		let exit_uuids: Vec<usize> = entity_uuids.clone(). //performance
 				into_iter().
-				filter(|id| self.components.is_exit(*id)).
+				filter(|uuid| self.components.is_exit(*uuid)).
 				collect();
-		let takeable_item_ids: Vec<usize> =
-			<Items as Clone>::clone(&self.components.location_items[self.state.current_location_id]).
+		let takeable_item_uuids: Vec<usize> =
+			<Items as Clone>::clone(self.components.get_location_items(self.state.current_location_uuid)).
 				into_iter().
-				filter(|(id, quantity)| *quantity > 0 ).
-				map(|(id, _)| self.components.get_array_id(&id) ).
-				filter(|id| self.components.is_takeable_item(*id) ).
+				filter(|(uuid, quantity)| *quantity > 0 && self.components.is_takeable_item(*uuid)).
+				map(|(uuid, _)| uuid ).
 				collect::<Vec<_>>();
-		let speaker_ids: Vec<usize> = entity_ids.clone(). //performance
+		let speaker_uuids: Vec<usize> = entity_uuids.clone(). //performance
 				into_iter().
 				filter(|id| self.components.is_speaker(*id)).
 				collect();
-		let vendor_ids: Vec<usize> = entity_ids.clone(). //performance
+		let vendor_uuids: Vec<usize> = entity_uuids.clone(). //performance
 				into_iter().
 				filter(|id| self.components.is_vendor(*id)).
 				collect();
@@ -154,39 +144,39 @@ impl Game<'_> {
 
 		// this is a waste of memory
 		self.scene.actions.push(Action{action_type: ActionType::LOOK, ..Default::default()});
-		for exit_id in &exit_ids {
+		for exit_uuid in &exit_uuids {
 			self.scene.actions.push(
 				Action{
 					action_type: ActionType::GO,
-					arg_1: Some(*exit_id),
+					arg_1: Some(*exit_uuid),
 					..Default::default()
 				}
 			);
 		}
-		for speaker_id in &speaker_ids {
+		for speaker_uuid in &speaker_uuids {
 			self.scene.actions.push(
 				Action{
 					action_type: ActionType::TALK,
-					arg_1: Some(*speaker_id),
+					arg_1: Some(*speaker_uuid),
 					..Default::default()
 				}
 			);
 		}
 
-		for vendor_id in &vendor_ids {
+		for vendor_uuid in &vendor_uuids {
 			self.scene.actions.push(
 				Action{
 					action_type: ActionType::VEND,
-					arg_1: Some(*vendor_id),
+					arg_1: Some(*vendor_uuid),
 					..Default::default()
 				}
 			);
 		}
-		for item_id in &takeable_item_ids {
+		for item_uuid in &takeable_item_uuids {
 			self.scene.actions.push(
 				Action{
 					action_type: ActionType::TAKE,
-					arg_1: Some(*item_id),
+					arg_1: Some(*item_uuid),
 					arg_2: Some(1),
 					..Default::default()
 				}
