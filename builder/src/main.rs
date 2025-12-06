@@ -8,7 +8,7 @@ mod vending;
 // std
 use std::fs::{
 	File,
-	metadata, 
+	metadata,
 	read_dir,
 	read_to_string
 };
@@ -17,11 +17,12 @@ use std::collections::HashMap;
 use std::clone::Clone;
 
 // ext
+use log4rs;
 
 // int
 use components::{write_components_file};
 use conversations::{
-	// ConversationNode, 
+	// ConversationNode,
 	ConversationsFile
 };
 use counts::Counts;
@@ -36,8 +37,8 @@ use entities::{
 };
 use main_file::MainFile;
 use vending::{
-	Vending, 
-	VendingsFile, 
+	Vending,
+	VendingsFile,
 	// VendItem
 };
 
@@ -52,6 +53,7 @@ fn load_entities_from_dir(builder: &mut Builder, dir_name: &str) {
 			if entity.entity_type == "Game" {
 				builder.counts.starting_location_uuid = entity.location.unwrap();
 			} else {
+				log::info!("{:?}", entity);
 				let uuid: usize = entity.id.unwrap();
 				match entity.entity_type.as_str() {
 					ENTITY_TYPE_CONVERSATION => { builder.counts.conversations.push(uuid); },
@@ -136,6 +138,8 @@ impl Builder {
 }
 
 fn main() {
+	log4rs::init_file("config/log4rs.yaml", Default::default()).unwrap();
+	log::info!("Starting up");
 	let mut builder: Builder = Builder{
 		counts: Counts::new(),
 		entities: HashMap::new(),
@@ -150,7 +154,19 @@ fn main() {
 	vendings_file.begin();
 	let mut vending_item_ids: Vec<usize> = Vec::new();
 
-	load_entities_from_dir(&mut builder, "../data");
+	let dirs = [
+		"conversations",
+		"exits",
+		"general",
+		"items",
+		"locations",
+		"persons",
+		"vending",
+	];
+	for dir in dirs {
+		load_entities_from_dir(&mut builder, format!("../data/{}", dir).as_str());
+	}
+	// load_entities_from_dir(&mut builder, "../data");
 
 	let mut conversation_index = 0;
 	let mut vending_index = 0;

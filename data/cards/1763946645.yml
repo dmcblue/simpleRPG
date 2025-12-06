@@ -1,0 +1,11 @@
+metaname: ""
+metadata: []
+id: 1763946645
+type: "Card"
+challenge_type: 1763943190
+name: "Loose soil"
+effects:
+  - type: "TEMP_BUFF"
+    arg_1: 1763943193
+    arg_2: 1
+    arg_3: 1

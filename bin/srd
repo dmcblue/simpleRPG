@@ -14,7 +14,7 @@ containsElement () (
 )
 
 help () (
-	object_type_list="Conversation, Exit, Item, Location, Person, Vending"
+	object_type_list="Card, Challenge_Type, Conversation, Exit, Item, Location, Person, Vending"
 	messages=(
 		"srd <command>\n"
 		"\t- help / --help / -h: Displays this message.\n"
@@ -86,7 +86,7 @@ elif [[ "$command" == "make" ]]; then
 	fi
 	template_file="$TEMPLATES_DIR/$template_kind.yml"
 	if [[ -f "$template_file" ]]; then
-		FILE_NAME="$DATA_DIR/$next_id.yml"
+		FILE_NAME="$DATA_DIR/${template_kind}s/$next_id.yml"
 		sed "s/\$SRD_ID0/$next_id/" $template_file > $FILE_NAME
 		if [[ "$template_kind" == "conversation" ]]; then
 			id=$(($next_id))
@@ -95,7 +95,7 @@ elif [[ "$command" == "make" ]]; then
 			id=$(($id+1))
 			sed -i "s/\$SRD_ID2/$id/" $FILE_NAME
 		fi
-		echo "$DATA_DIR/$next_id.yml"
+		echo "$FILE_NAME"
 	else
 		error "No type '$template_kind'"
 	fi

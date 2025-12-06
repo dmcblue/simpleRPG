@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+log = "0.4.29"
+log4rs = "1.4.0"
 regex = "1.12.2"
 serde = { version = "1.0", features = ["derive"] }
 serde-saphyr = "0.0.7"

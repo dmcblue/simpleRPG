@@ -14,5 +14,6 @@
 
 # Other
 bin/_temp.yml
+builder/log/*.log
 game/log/*.log
 saves/*.sv

@@ -1,9 +1,16 @@
 # Notes
 
-- On conversation effects
-- General effect handling
 - Challenge interaction
 - bin/srd searching
+
+- Better abstraction between (produced) data-layer and game logic
+
+- First Step
+  - Components should not expose any array indices
+  - Game code should not use indices in any communication (Actions, etc)
+- Move to big struct, id hash acces
+- fodlers for each type
+- -> start with challenges
 
 ## Application Structure
 

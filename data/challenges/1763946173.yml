@@ -1,0 +1,16 @@
+metaname: ""
+metadata: []
+id: 1763946173
+type: "Challenge"
+name: "St. Yves Mount"
+challenge_type: 1763943190
+level: 1
+phases:
+  - id: 1763946174
+    name: "Eastern Pass"
+    attributes:
+      distance: 3
+      toughness: 4
+      skill: 2
+    cards:
+      - 0
