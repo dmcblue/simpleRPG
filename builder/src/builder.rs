@@ -14,7 +14,7 @@ use super::challenges::ChallengesFile;
 use super::counts::Counts;
 use super::entities::{
 	Entity,
-	ENTITY_TYPE_CARD,
+	ENTITY_TYPE_CHALLENGE_CARD,
 	ENTITY_TYPE_CHALLENGE,
 	ENTITY_TYPE_CHALLENGE_TYPE,
 	ENTITY_TYPE_CONVERSATION,
@@ -26,16 +26,6 @@ use super::entities::{
 };
 use super::main_file::MainFile;
 
-
-pub const CACHE_CARD: &str = "Card";
-pub const CACHE_CHALLENGE: &str = "Challenge";
-pub const CACHE_CHALLENGE_TYPE: &str = "ChallengeType";
-pub const CACHE_CONVERSATION: &str = "Conversation";
-pub const CACHE_EXIT: &str = "Exit";
-pub const CACHE_ITEM: &str = "Item";
-pub const CACHE_LOCATION: &str = "Location";
-pub const CACHE_PERSON: &str = "Person";
-pub const CACHE_VENDING: &str = "Vending";
 
 pub struct Builder {
 	pub challenges_file: ChallengesFile,
@@ -102,11 +92,11 @@ impl Builder {
 		}
 		self.counts.challenges.end = self.counts.total;
 
-		self.counts.cards.start = self.counts.total;
-		for entity_uuid in self.counts.cards.uuids.clone().iter() {
+		self.counts.challenge_cards.start = self.counts.total;
+		for entity_uuid in self.counts.challenge_cards.uuids.clone().iter() {
 			self.add_cache_item(*entity_uuid);
 		}
-		self.counts.cards.end = self.counts.total;
+		self.counts.challenge_cards.end = self.counts.total;
 
 	}
 
@@ -129,6 +119,7 @@ impl Builder {
 					let uuid: usize = entity.id.unwrap();
 					match entity.entity_type.as_str() {
 						ENTITY_TYPE_CHALLENGE => { self.counts.challenges.uuids.push(uuid); },
+						ENTITY_TYPE_CHALLENGE_CARD => { self.counts.challenge_cards.uuids.push(uuid); },
 						ENTITY_TYPE_CHALLENGE_TYPE => {
 							self.counts.challenge_types.uuids.push(uuid);
 							self.challenges_file.process_challenge_type_attributes(&entity);

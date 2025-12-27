@@ -81,7 +81,7 @@ if $(containsElement "$command" "${HELP_OPTIONS[@]}"); then
 	help
 elif [[ "$command" == "make" ]]; then
 	next_id=$(get_id)
-	template_kind="$2"
+	template_kind=`echo $2  | sed -r 's/([A-Z])/_\L\1/g' | sed 's/^_//'`
 	if [[ -z "$template_kind" ]];then
 		error "No object type provided"
 	fi
@@ -89,13 +89,15 @@ elif [[ "$command" == "make" ]]; then
 	if [[ -f "$template_file" ]]; then
 		FILE_NAME="$DATA_DIR/${template_kind}s/$next_id.yml"
 		sed "s/\$SRD_ID0/$next_id/" $template_file > $FILE_NAME
-		if [[ "$template_kind" == "conversation" ]]; then
-			id=$(($next_id))
-			id=$(($id+1))
-			sed -i "s/\$SRD_ID1/$id/" $FILE_NAME
-			id=$(($id+1))
-			sed -i "s/\$SRD_ID2/$id/" $FILE_NAME
-		fi
+
+		id=$(($next_id))
+		id=$(($id+1))
+		sed -i "s/\$SRD_ID1/$id/" $FILE_NAME
+		id=$(($id+1))
+		sed -i "s/\$SRD_ID2/$id/" $FILE_NAME
+		id=$(($id+1))
+		sed -i "s/\$SRD_ID3/$id/" $FILE_NAME
+
 		echo "$FILE_NAME"
 	else
 		error "No type '$template_kind'"

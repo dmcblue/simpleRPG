@@ -1,11 +1,11 @@
 metaname: ""
 metadata: []
-id: 1763946645
-type: "Card"
+id: $SRD_ID0
+type: "ChallengeCard"
 challenge_type: 1763943190
-name: "Loose soil"
+name: ""
 effects:
   - type: "TEMP_BUFF"
-    arg_1: 1763943193
+    arg_1: 0
     arg_2: 1
     arg_3: 1

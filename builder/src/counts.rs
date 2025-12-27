@@ -21,9 +21,9 @@ impl Count {
 }
 
 pub struct Counts {
+	pub challenge_cards: Count,
 	pub challenge_types: Count,
 	pub challenges: Count,
-	pub cards: Count,
 	pub conversations: Count,
 	pub exits: Count,
 	pub inventory_uuid: usize,
@@ -39,9 +39,9 @@ pub struct Counts {
 impl Counts {
 	pub fn new() -> Self {
 		Self {
+			challenge_cards: Count::new(),
 			challenge_types: Count::new(),
 			challenges: Count::new(),
-			cards: Count::new(),
 			conversations: Count::new(),
 			exits: Count::new(),
 			inventory_uuid: 0,

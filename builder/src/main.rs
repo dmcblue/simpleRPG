@@ -57,6 +57,7 @@ fn main() {
 	let dirs = [
 		"challenges",
 		"challenge_types",
+		"challenge_cards",
 		"conversations",
 		"exits",
 		"general",
@@ -134,8 +135,8 @@ fn main() {
 		// }
 		// challenges only
 		// if array_index >= builder.counts.challenges.start {
-		if builder.counts.cards.in_range(array_index) {
-
+		if builder.counts.challenge_cards.in_range(array_index) {
+			builder.challenges_file.render_card(entity);
 		}
 		else if builder.counts.challenges.in_range(array_index) {
 			builder.challenges_file.render_challenge(entity);

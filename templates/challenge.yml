@@ -1,0 +1,27 @@
+metaname: ""
+metadata: []
+id: $SRD_ID0
+type: "Challenge"
+name: ""
+challenge_type: 0
+location: 0
+level: 1
+phases:
+  - id: $SRD_ID1
+    name: ""
+    attributes:
+      attr: 0
+    cards:
+      - 0
+  - id: $SRD_ID2
+    name: ""
+    attributes:
+      attr: 0
+    cards:
+      - 0
+  - id: $SRD_ID3
+    name: ""
+    attributes:
+      attr: 0
+    cards:
+      - 0

@@ -51,7 +51,7 @@ impl ChallengesFile {
 	pub fn begin(&mut self) {
 		let _ = self.file_handle.write_all(
 			b"use std::collections::HashMap;\n\
-			use super::challenges::{Challenge, ChallengeType, Phase, ChallengeCard, ChallengeEffect};\n\
+			use super::challenges::{Challenge, ChallengeType, Phase, ChallengeCard, ChallengeEffect, ChallengeEffectType};\n\
 			use super::components::{Components};\n\
 			\n\
 			pub fn load_challenges(components: &mut Components) {\n\
@@ -74,8 +74,42 @@ impl ChallengesFile {
 		);
 	}
 
-	pub fn render_card(&mut self, challenge_type: Entity) {
-
+	pub fn render_card(&mut self, challenge_card: Entity) {
+		let _ = self.file_handle.write_all(
+			format!(
+				"\tcomponents.challenge_cards.insert(\n\
+				\t\t{},\n\
+				\t\tChallengeCard{{\n\
+				\t\t\tname: String::from(\"{}\"),\n\
+				\t\t\tchallenge_type_uuid: {},\n\
+				\t\t\teffects: vec![\n\
+				",
+				challenge_card.id.unwrap(),
+				challenge_card.name.unwrap(),
+				challenge_card.challenge_type.unwrap(),
+			).as_bytes()
+		);
+		for effect in challenge_card.effects.unwrap() {
+			let _ = self.file_handle.write_all(
+				format!(
+					"\t\t\t\tChallengeEffect {{\n\
+					\t\t\t\t\tevent_type: ChallengeEffectType::{},\n\
+					\t\t\t\t\targ_1: {},\n\
+					\t\t\t\t\targ_2: {},\n\
+					\t\t\t\t\targ_3: {},\n\
+					\t\t\t\t}},\n",
+					effect.effect_type,
+					effect.arg_1,
+					effect.arg_2,
+					effect.arg_3,
+				).as_bytes()
+			);
+		}
+		let _ = self.file_handle.write_all(
+			b"\t\t\t],\n\
+			\t\t}\n\
+			\t);\n"
+		);
 	}
 
 	pub fn render_challenge_type(&mut self, challenge_type: Entity) {

@@ -1,0 +1,9 @@
+metaname: ""
+metadata: []
+id: $SRD_ID0
+type: "ChallengeType"
+name: ""
+attributes:
+  key: $SRD_ID1
+  toughness: $SRD_ID2
+  skill: $SRD_ID3

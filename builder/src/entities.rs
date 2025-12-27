@@ -1,10 +1,6 @@
 // std
-use std::fs;
-use std::fs::File;
-use std::io::Write;
 use std::collections::HashMap;
 use std::clone::{Clone};
-use std::marker::Copy;
 
 // ext
 use serde::{Serialize, Deserialize};
@@ -20,7 +16,7 @@ use super::vending::{
 	VendItem
 };
 
-pub const ENTITY_TYPE_CARD: &str = "Card";
+pub const ENTITY_TYPE_CHALLENGE_CARD: &str = "ChallengeCard";
 pub const ENTITY_TYPE_CHALLENGE: &str = "Challenge";
 pub const ENTITY_TYPE_CHALLENGE_TYPE: &str = "ChallengeType";
 pub const ENTITY_TYPE_CONVERSATION: &str = "Conversation";
@@ -78,7 +74,7 @@ pub struct Entity {
 	// ChallengeType
 	pub attributes: Option<HashMap<String, usize>>,
 	// Challenge
-	pub challenge_type: Option<usize>,
+	pub challenge_type: Option<usize>, // and ChallengeCard
 	pub level: Option<usize>,
 	pub phases: Option<Vec<ChallengePhase>>,
 	// Card specific
