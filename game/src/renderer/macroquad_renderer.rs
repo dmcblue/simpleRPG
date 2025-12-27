@@ -22,7 +22,7 @@ impl MacroquadRenderer {
 }
 
 impl Renderer for MacroquadRenderer {
-	fn init(&self) {}
+	fn init(&self, frame: &Frame) {}
 
 	fn render(&mut self, frame: &mut Frame) {
 		clear_background(BLACK);

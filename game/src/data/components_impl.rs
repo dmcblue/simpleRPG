@@ -135,17 +135,21 @@ impl Components<'_> {
 		self.takeable[id - self.items_start]
 	}
 
-	pub fn move_item_to(&mut self, entity_uuid: usize, new_location_id: usize) {
+	pub fn move_item_to(&mut self, entity_uuid: usize, new_location_uuid: usize) {
 		let starting_location_id = self.location_items.iter().position(|items| items.any(entity_uuid) ).unwrap();
 		let _ = self.location_items[starting_location_id].remove(entity_uuid, 1);
-		let _ = self.location_items[new_location_id].add(entity_uuid, 1);
+		let new_location_index = self.get_array_id(new_location_uuid);
+		let _ = self.location_items[new_location_index].add(entity_uuid, 1);
 	}
 
-	pub fn move_to(&mut self, entity_uuid: usize, new_location_id: usize) {
-		let starting_location_id = self.location_map[entity_uuid];
-		let index = self.locations[starting_location_id].iter().position(|eid| *eid == entity_uuid).unwrap();
-		self.locations[starting_location_id].remove(index);
-		self.location_map[entity_uuid] = new_location_id;
-		self.locations[new_location_id].push(entity_uuid);
+	pub fn move_to(&mut self, entity_uuid: usize, new_location_uuid: usize) {
+		let entity_index = self.get_array_id(entity_uuid);
+		let starting_location_index = self.location_map[entity_index];
+		let index = self.locations[starting_location_index].iter().position(|eid| *eid == entity_uuid).unwrap(); // ?
+		// remove (index)
+		self.locations[starting_location_index].remove(index);
+		let new_location_index = self.get_array_id(new_location_uuid);
+		self.location_map[entity_index] = new_location_uuid;
+		self.locations[new_location_index].push(entity_uuid);
 	}
 }

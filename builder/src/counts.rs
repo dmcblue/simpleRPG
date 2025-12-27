@@ -1,26 +1,37 @@
 // Used by the builder to track values
 
+pub struct Count {
+	pub uuids: Vec<usize>,
+	pub start: usize,
+	pub end: usize,
+}
+
+impl Count {
+	pub fn new() -> Self {
+		return Self {
+			uuids: Vec::new(),
+			start: 0,
+			end: 0,
+		};
+	}
+
+	pub fn in_range(&self, index: usize) -> bool {
+		return index >= self.start && index < self.end;
+	}
+}
+
 pub struct Counts {
-	pub conversations: Vec<usize>,
-	pub conversations_start: usize,
-	pub conversations_end: usize,
-	pub exits: Vec<usize>,
-	pub exits_start: usize,
-	pub exits_end: usize,
+	pub challenge_types: Count,
+	pub challenges: Count,
+	pub cards: Count,
+	pub conversations: Count,
+	pub exits: Count,
 	pub inventory_uuid: usize,
-	pub items: Vec<usize>,
-	pub items_start: usize,
-	pub items_end: usize,
-	pub locations: Vec<usize>,
-	pub locations_start: usize,
-	pub locations_end: usize,
-	pub people: Vec<usize>,
-	pub people_start: usize,
-	pub people_end: usize,
-	pub vending: Vec<usize>,
+	pub items: Count,
+	pub locations: Count,
+	pub people: Count,
 	pub vending_ether_uuid: usize,
-	pub vending_start: usize,
-	pub vending_end: usize,
+	pub vending: Count,
 	pub starting_location_uuid: usize,
 	pub total: usize,
 }
@@ -28,26 +39,17 @@ pub struct Counts {
 impl Counts {
 	pub fn new() -> Self {
 		Self {
-			conversations: Vec::new(),
-			conversations_start: 0,
-			conversations_end: 0,
-			exits: Vec::new(),
-			exits_start: 0,
-			exits_end: 0,
+			challenge_types: Count::new(),
+			challenges: Count::new(),
+			cards: Count::new(),
+			conversations: Count::new(),
+			exits: Count::new(),
 			inventory_uuid: 0,
-			items: Vec::new(),
-			items_start: 0,
-			items_end: 0,
-			locations: Vec::new(),
-			locations_start: 0,
-			locations_end: 0,
-			people: Vec::new(),
-			people_start: 0,
-			people_end: 0,
-			vending: Vec::new(),
+			items: Count::new(),
+			locations: Count::new(),
+			people: Count::new(),
 			vending_ether_uuid: 0,
-			vending_start: 0,
-			vending_end: 0,
+			vending: Count::new(),
 			starting_location_uuid: 0,
 			total: 0,
 		}

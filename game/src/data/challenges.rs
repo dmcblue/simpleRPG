@@ -1,11 +1,13 @@
+use std::collections::HashMap;
+
 pub struct ChallengeType {
 	pub name: String,
 	// name -> uuid
-	pub attributes: HashMep<String, usize>,
+	pub attributes: HashMap<String, usize>,
 }
 
 pub struct Challenge {
-	pub challenge_type: &ChallengeType,
+	pub challenge_type_uuid: usize,
 	pub name: String,
 	pub level: usize,
 	pub phases: Vec<Phase>,
@@ -26,14 +28,14 @@ pub enum ChallengeEffectType {
 
 pub struct ChallengeCard {
 	// pub id: usize,
-	pub challenge_type: &ChallengeType,
+	pub challenge_type_uuid: usize,
 	pub name: String,
 	pub effects: Vec<ChallengeEffect>,
 }
 
 #[derive(Clone, Copy, Debug)]
 pub struct ChallengeEffect {
-	pub event_type: ChallengeEventType,
+	pub event_type: ChallengeEffectType,
 	pub arg_1: usize,
 	pub arg_2: usize,
 	pub arg_3: usize,

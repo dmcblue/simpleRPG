@@ -11,6 +11,7 @@ pub fn write_components_file(counts: &Counts, inventory_uuid: usize /* not uuid 
 	let _ = file.write_all(format!("
 use std::collections::HashMap;
 
+use super::challenges::{{Challenge, ChallengeCard, ChallengeType}};
 use super::conversations::{{ConversationNode}};
 use super::items::{{Items}};
 use super::vending::{{Price, Vending, VendItem}};
@@ -23,12 +24,16 @@ use super::vending::{{Price, Vending, VendItem}};
 // - conversations
 
 pub struct Components<'a> {{
+	pub challenge_cards: HashMap<usize, ChallengeCard>,
+	pub challenge_types: HashMap<usize, ChallengeType>,
+	pub challenges: HashMap<usize, Challenge>,
 	pub conversations: [ConversationNode; {}],
 	pub conversations_start: usize,
 	pub descriptions: [&'a str; {}],
 	pub destinations: [usize; {}],
 	pub enabled: HashMap<usize, bool>,
 	pub location_items: [Items; {}],
+	// entity index => location uuid
 	pub location_map: [usize; {}],
 	pub locations: [Vec<usize>; {}],
 	pub names: [&'a str; {}],
@@ -47,6 +52,9 @@ pub struct Components<'a> {{
 impl Components<'_> {{
 	pub fn new() -> Self {{
 		return Components {{
+			challenge_cards: HashMap::new(),
+			challenge_types: HashMap::new(),
+			challenges: HashMap::new(),
 			conversations: [(); {}].map(|_| ConversationNode::new()),
 			conversations_start: {},
 			descriptions: [\"\"; {}],
@@ -71,34 +79,34 @@ impl Components<'_> {{
 }}
 ",
 		// Component Struct Definition
-		counts.total - counts.conversations_start, // conversations
+		counts.conversations.end - counts.conversations.start, // conversations
 		counts.total, // descriptions
-		counts.exits.len(), // destinations
-		counts.locations.len(), // location items
+		counts.exits.uuids.len(), // destinations
+		counts.locations.uuids.len(), // location items
 		counts.total, // location_map
-		counts.locations.len(), // locations
+		counts.locations.uuids.len(), // locations
 		counts.total, // names
 		counts.total, // owns_conversation
 		counts.total, // owns_vending
-		counts.items.len(), // takeable
+		counts.items.uuids.len(), // takeable
 		counts.total, // uuids
 
 		// Component init
-		counts.total - counts.conversations_start, // conversations
-		counts.conversations_start, // conversations_start
+		counts.conversations.end - counts.conversations.start, // conversations
+		counts.conversations.start, // conversations_start
 		counts.total, // descriptions
-		counts.exits.len(), // destinations
-		counts.locations.len(), // location items
+		counts.exits.uuids.len(), // destinations
+		counts.locations.uuids.len(), // location items
 		counts.total, // location_map
-		counts.locations.len(), // locations
+		counts.locations.uuids.len(), // locations
 		counts.total, // names
 		counts.total, // owns_conversation
 		counts.total, // owns_vending
-		counts.exits_start, // exists start
-		counts.items_start, // items_start
-		counts.people_start, // people_start
+		counts.exits.start, // exists start
+		counts.items.start, // items_start
+		counts.people.start, // people_start
 		inventory_uuid, // inventory_id
-		counts.items.len(), // takeable
+		counts.items.uuids.len(), // takeable
 		counts.total, // uuids
 		// counts.vending.len(), // vendings
 	).as_bytes());

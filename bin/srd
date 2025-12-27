@@ -42,20 +42,21 @@ get_id() (
 )
 
 make_cache() (
+	FORCE=$1
 	if [ ! -f bin/_temp.yml ]; then
 		CACHE_TIME=0
 	else
 		CACHE_TIME=$(stat -c '%Y' $CACHE_FILE)
 	fi
 
-	LATEST_FILE=$(ls -lt $DATA_DIR/*.yml | head -n 1 | awk '{print $9}')
+	LATEST_FILE=$(ls -lt $DATA_DIR/**/*.yml | head -n 1 | awk '{print $9}')
 	LATEST_CHANGE_TIME=$(stat -c '%Y' $LATEST_FILE)
 
-	if [[ $CACHE_TIME -lt $LATEST_CHANGE_TIME ]]; then
+	if [[ $CACHE_TIME -lt $LATEST_CHANGE_TIME ]] || [[ $FORCE == 1 ]]; then
 		echo '' > $CACHE_FILE
-		for f in $DATA_DIR/*yml; do
+		for f in $DATA_DIR/**/*.yml; do
 			cat $f >> $CACHE_FILE
-			printf "\n---\n\n" >> $CACHE_FILE
+			printf "\n\n---\n\n" >> $CACHE_FILE
 		done
 	fi
 )
@@ -110,11 +111,16 @@ elif [[ "$command" == "debug" ]]; then
 elif [[ "$command" == "run" ]]; then
 	cd game
 	SRD_DEV=1 cargo run
+	if [[ "$2" == "-v" ]]; then
+		SRD_DEV=1 RUST_BACKTRACE=1 cargo run
+	fi
 	cd ..
 elif [[ "$command" == "search" ]]; then
 	make_cache
 	type="${2^}"
 	search $type | less
+elif [[ "$command" == "build_cache" ]]; then
+	make_cache 1
 else
 	error "No arguments given"
 fi

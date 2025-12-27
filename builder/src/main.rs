@@ -1,3 +1,5 @@
+mod builder;
+mod challenges;
 mod components;
 mod conversations;
 mod counts;
@@ -6,13 +8,6 @@ mod main_file;
 mod vending;
 
 // std
-use std::fs::{
-	File,
-	metadata,
-	read_dir,
-	read_to_string
-};
-use std::io::Write;
 use std::collections::HashMap;
 use std::clone::Clone;
 
@@ -20,21 +15,15 @@ use std::clone::Clone;
 use log4rs;
 
 // int
+use builder::{
+	Builder,
+};
+use challenges::{ChallengesFile};
 use components::{write_components_file};
 use conversations::{
-	// ConversationNode,
 	ConversationsFile
 };
 use counts::Counts;
-use entities::{
-	Entity,
-	ENTITY_TYPE_CONVERSATION,
-	ENTITY_TYPE_EXIT,
-	ENTITY_TYPE_ITEM,
-	ENTITY_TYPE_LOCATION,
-	ENTITY_TYPE_PERSON,
-	ENTITY_TYPE_VENDING,
-};
 use main_file::MainFile;
 use vending::{
 	Vending,
@@ -42,105 +31,15 @@ use vending::{
 	// VendItem
 };
 
-fn load_entities_from_dir(builder: &mut Builder, dir_name: &str) {
-	let paths = read_dir(dir_name).unwrap();
-	for path in paths {
-		let file_path = path.unwrap().path();
-        if !metadata(&file_path).unwrap().is_dir() {
-			let contents = read_to_string(file_path).unwrap();
-			let entity: Entity = serde_saphyr::from_str(&contents).unwrap();
 
-			if entity.entity_type == "Game" {
-				builder.counts.starting_location_uuid = entity.location.unwrap();
-			} else {
-				log::info!("{:?}", entity);
-				let uuid: usize = entity.id.unwrap();
-				match entity.entity_type.as_str() {
-					ENTITY_TYPE_CONVERSATION => { builder.counts.conversations.push(uuid); },
-					ENTITY_TYPE_EXIT => { builder.counts.exits.push(uuid); },
-					ENTITY_TYPE_ITEM => { builder.counts.items.push(uuid); },
-					ENTITY_TYPE_LOCATION => { builder.counts.locations.push(uuid); },
-					ENTITY_TYPE_PERSON => { builder.counts.people.push(uuid); },
-					ENTITY_TYPE_VENDING => { builder.counts.vending.push(uuid); },
-					_ => ()
-				}
 
-				if entity.metaname == "Inventory" {
-					builder.counts.inventory_uuid = uuid;
-				} else if entity.metaname == "Vending Ether" {
-					builder.counts.vending_ether_uuid = uuid;
-				}
-				builder.entities.insert(uuid, entity);
-			}
-		}
-	}
-}
 
-struct Builder {
-	counts: Counts,
-	entities: HashMap<usize, Entity>,
-	main_file: MainFile,
-	uuid_to_index: HashMap<usize, usize>,
-	index_to_uuid: HashMap<usize, usize>,
-}
-
-impl Builder {
-	pub fn add_cache_item(&mut self, entity_uuid: usize) {
-		self.uuid_to_index.insert(entity_uuid, self.counts.total);
-		self.index_to_uuid.insert(self.counts.total, entity_uuid);
-		self.counts.total = self.counts.total + 1;
-	}
-
-	pub fn build_cache(&mut self) {
-		self.counts.locations_start = self.counts.total;
-		for entity_uuid in self.counts.locations.iter() {
-			self.uuid_to_index.insert(*entity_uuid, self.counts.total);
-			self.index_to_uuid.insert(self.counts.total, *entity_uuid);
-			self.counts.total = self.counts.total + 1;
-		}
-		self.counts.locations_end = self.counts.total;
-		self.counts.items_start = self.counts.total;
-		for entity_uuid in self.counts.items.iter() {
-			self.uuid_to_index.insert(*entity_uuid, self.counts.total);
-			self.index_to_uuid.insert(self.counts.total, *entity_uuid);
-			self.counts.total = self.counts.total + 1;
-		}
-		self.counts.items_end = self.counts.total;
-		self.counts.people_start = self.counts.total;
-		for entity_uuid in self.counts.people.iter() {
-			self.uuid_to_index.insert(*entity_uuid, self.counts.total);
-			self.index_to_uuid.insert(self.counts.total, *entity_uuid);
-			self.counts.total = self.counts.total + 1;
-		}
-		self.counts.people_end = self.counts.total;
-		self.counts.exits_start = self.counts.total;
-		for entity_uuid in self.counts.exits.iter() {
-			self.uuid_to_index.insert(*entity_uuid, self.counts.total);
-			self.index_to_uuid.insert(self.counts.total, *entity_uuid);
-			self.counts.total = self.counts.total + 1;
-		}
-		self.counts.exits_end = self.counts.total;
-		self.counts.vending_start = self.counts.total;
-		for entity_uuid in self.counts.vending.iter() {
-			self.uuid_to_index.insert(*entity_uuid, self.counts.total);
-			self.index_to_uuid.insert(self.counts.total, *entity_uuid);
-			self.counts.total = self.counts.total + 1;
-		}
-		self.counts.vending_end = self.counts.total;
-		self.counts.conversations_start = self.counts.total;
-		for entity_uuid in self.counts.conversations.iter() {
-			self.uuid_to_index.insert(*entity_uuid, self.counts.total);
-			self.index_to_uuid.insert(self.counts.total, *entity_uuid);
-			self.counts.total = self.counts.total + 1;
-		}
-		self.counts.conversations_end = self.counts.total;
-	}
-}
 
 fn main() {
 	log4rs::init_file("config/log4rs.yaml", Default::default()).unwrap();
 	log::info!("Starting up");
 	let mut builder: Builder = Builder{
+		challenges_file: ChallengesFile::new(),
 		counts: Counts::new(),
 		entities: HashMap::new(),
 		main_file: MainFile::new(),
@@ -153,8 +52,11 @@ fn main() {
 	let mut vendings_file = VendingsFile::new();
 	vendings_file.begin();
 	let mut vending_item_ids: Vec<usize> = Vec::new();
+	builder.challenges_file.begin();
 
 	let dirs = [
+		"challenges",
+		"challenge_types",
 		"conversations",
 		"exits",
 		"general",
@@ -164,7 +66,7 @@ fn main() {
 		"vending",
 	];
 	for dir in dirs {
-		load_entities_from_dir(&mut builder, format!("../data/{}", dir).as_str());
+		builder.load_entities_from_dir(format!("../data/{}", dir).as_str());
 	}
 	// load_entities_from_dir(&mut builder, "../data");
 
@@ -174,9 +76,10 @@ fn main() {
 	builder.build_cache();
 
 	for (uuid, entity) in builder.entities {
+		log::info!("{}, {:?}", uuid, entity);
 		let array_index = *builder.uuid_to_index.get(&uuid).unwrap();
 		// all non-conversations and non-vending
-		if array_index < builder.counts.vending_start {
+		if array_index < builder.counts.vending.start {
 			builder.main_file.write_all(
 				format!(
 					"\tcomponents.uuid_map.insert({}, {});\n",
@@ -202,17 +105,17 @@ fn main() {
 				format!(
 					"\tcomponents.descriptions[{}] = \"{}\";\n",
 					array_index,
-					str::replace(entity.description.unwrap().trim(), "\"", "\\\"")
+					str::replace(entity.description.clone().unwrap().trim(), "\"", "\\\"")
 				)
 			);
 
 			// non-locations
-			if array_index >= builder.counts.items_start {
+			if array_index >= builder.counts.items.start {
 
 			}
 
-			if array_index >= builder.counts.locations_start && array_index < builder.counts.locations_end {
-				for item_slot in entity.items.unwrap() {
+			if array_index >= builder.counts.locations.start && array_index < builder.counts.locations.end {
+				for item_slot in entity.items.clone().unwrap() {
 					builder.main_file.write_all(
 						format!(
 							"\tcomponents.location_items[{}].add({}, {});\n",
@@ -225,8 +128,26 @@ fn main() {
 			}
 		}
 
+		// match builder.counts.in_range_of(array_index) {
+		// 	"bobby" => (),
+		// 	_ => ()
+		// }
+		// challenges only
+		// if array_index >= builder.counts.challenges.start {
+		if builder.counts.cards.in_range(array_index) {
+
+		}
+		else if builder.counts.challenges.in_range(array_index) {
+			builder.challenges_file.render_challenge(entity);
+		}
+		// challenge types only
+		// else if array_index >= builder.counts.challenge_types.start {
+		else if builder.counts.challenge_types.in_range(array_index) {
+			builder.challenges_file.render_challenge_type(entity);
+		}
 		// conversations only
-		if array_index >= builder.counts.conversations_start {
+		// else if array_index >= builder.counts.conversations.start {
+		else if builder.counts.conversations.in_range(array_index) {
 			builder.main_file.write_all(
 				format!(
 					"\tcomponents.owns_conversation[{}] = Some({});\n",
@@ -236,7 +157,7 @@ fn main() {
 			);
 
 			conversations_file.open_root(uuid);
-			for conversation in entity.prompts.unwrap() {
+			for conversation in entity.prompts.clone().unwrap() {
 				conversations_file.render_conversation(
 					&conversation,
 					String::new()
@@ -247,7 +168,8 @@ fn main() {
 			conversation_index = conversation_index + 1;
 		}
 		// vending only
-		else if array_index >= builder.counts.vending_start {
+		// else if array_index >= builder.counts.vending.start {
+		else if builder.counts.vending.in_range(array_index) {
 			builder.main_file.write_all(
 				format!(
 					"\tcomponents.owns_vending[{}] = Some({});\n",
@@ -257,7 +179,7 @@ fn main() {
 			);
 			let vending = Vending {
 				id: uuid,
-				items: entity.vendables.unwrap()
+				items: entity.vendables.clone().unwrap()
 			};
 			vendings_file.render_vending(&vending);
 			for item in vending.items {
@@ -266,7 +188,8 @@ fn main() {
 			vending_index = vending_index + 1;
 		}
 		// exits only
-		else if array_index >= builder.counts.exits_start {
+		// else if array_index >= builder.counts.exits.start {
+		else if builder.counts.exits.in_range(array_index) {
 			builder.main_file.write_all(
 				format!(
 					"\tcomponents.locations[{}].push({});\n",
@@ -284,13 +207,14 @@ fn main() {
 			builder.main_file.write_all(
 				format!(
 					"\tcomponents.destinations[{}] = {};\n",
-					array_index - builder.counts.exits_start,
+					array_index - builder.counts.exits.start,
 					entity.to.unwrap(),
 				)
 			);
 		}
 		// people only
-		else if array_index >= builder.counts.people_start {
+		// else if array_index >= builder.counts.people.start {
+		else if builder.counts.people.in_range(array_index) {
 			builder.main_file.write_all(
 				format!(
 					"\tcomponents.locations[{}].push({});\n",
@@ -307,11 +231,12 @@ fn main() {
 			);
 		}
 		// items only
-		else if array_index >= builder.counts.items_start {
+		// else if array_index >= builder.counts.items.start {
+		else if builder.counts.items.in_range(array_index) {
 			builder.main_file.write_all(
 				format!(
 					"\tcomponents.takeable[{}] = {};\n",
-					array_index - builder.counts.items_start,
+					array_index - builder.counts.items.start,
 					&entity.takeable.unwrap()
 				)
 			);
@@ -334,6 +259,7 @@ fn main() {
 		);
 	}
 
+	builder.challenges_file.end();
 	conversations_file.end();
 	vendings_file.end();
 	builder.main_file.end(builder.counts.starting_location_uuid);

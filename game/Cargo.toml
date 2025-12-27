@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 chrono = "0.4.41"
+crossterm = "0.29.0"
 log = "0.4.28"
 log4rs = "1.4.0"
 macroquad = "0.4.14"

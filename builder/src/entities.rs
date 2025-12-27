@@ -3,22 +3,26 @@ use std::fs;
 use std::fs::File;
 use std::io::Write;
 use std::collections::HashMap;
-use std::clone::Clone;
+use std::clone::{Clone};
+use std::marker::Copy;
 
 // ext
 use serde::{Serialize, Deserialize};
 
 // int
 use super::conversations::{
-	ConversationNode, 
+	ConversationNode,
 	// ConversationsFile
 };
 use super::vending::{
-	// Vending, 
-	// VendingsFile, 
+	// Vending,
+	// VendingsFile,
 	VendItem
 };
 
+pub const ENTITY_TYPE_CARD: &str = "Card";
+pub const ENTITY_TYPE_CHALLENGE: &str = "Challenge";
+pub const ENTITY_TYPE_CHALLENGE_TYPE: &str = "ChallengeType";
 pub const ENTITY_TYPE_CONVERSATION: &str = "Conversation";
 pub const ENTITY_TYPE_EXIT: &str = "Exit";
 pub const ENTITY_TYPE_ITEM: &str = "Item";
@@ -45,8 +49,8 @@ pub struct ItemSlot {
 pub struct ChallengePhase {
 	pub id: usize,
 	pub name: String,
-	pub attributes: Option<HashMap<String, usize>>,
-	pub cards: Option<Vec<usize>>,
+	pub attributes: HashMap<String, usize>,
+	pub cards: Vec<usize>,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]

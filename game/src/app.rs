@@ -5,6 +5,7 @@ use std::time::{Instant};
 
 // int
 use super::data::{
+	load_challenges,
 	load_conversations,
 	load_data,
 	load_vendings,
@@ -46,10 +47,11 @@ impl<'app> App<'app> {
 		self.set_mode(Mode::MAIN_MENU);
 
 		load_data(&mut self.game.components);
+		load_challenges(&mut self.game.components);
 		load_conversations(&mut self.game.components);
 		load_vendings(&mut self.game.components);
 
-		self.interface.renderer.init();
+		self.interface.renderer.init(&mut self.interface.frame);
 	}
 
 	pub fn set_play_scene(&mut self) {

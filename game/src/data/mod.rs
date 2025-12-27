@@ -1,4 +1,6 @@
 pub mod main;
+pub mod challenges;
+pub mod challenges_impl;
 pub mod components;
 pub mod components_impl;
 pub mod conversations;
@@ -9,6 +11,15 @@ pub mod vending;
 pub mod vending_impl;
 
 pub use main::{get_start_location_uuid, load_data};
+pub use challenges::{
+	ChallengeType,
+	Challenge,
+	Phase,
+	ChallengeEffectType,
+	ChallengeCard,
+	ChallengeEffect,
+};
+pub use challenges_impl::{load_challenges};
 pub use components::Components;
 pub use conversations::ConversationNode;
 pub use conversations_impl::load_conversations;
