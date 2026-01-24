@@ -1,9 +1,9 @@
 // const FRAME_WIDTH: usize = 110;
 // const FRAME_HEIGHT: usize = 40;
-const FRAME_WIDTH: usize = 80;
-const FRAME_HEIGHT: usize = 30;
 // const FRAME_WIDTH: usize = 80;
-// const FRAME_HEIGHT: usize = 24;
+// const FRAME_HEIGHT: usize = 30;
+const FRAME_WIDTH: usize = 80;
+const FRAME_HEIGHT: usize = 24;
 
 pub struct Frame {
     pub width: usize,

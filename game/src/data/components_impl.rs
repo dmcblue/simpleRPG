@@ -80,6 +80,10 @@ impl Components<'_> {
 	// 	}
 	// }
 
+	pub fn is_challenge(&self, uuid: usize) -> bool {
+		return self.challenges.contains_key(&uuid);
+	}
+
 	pub fn is_enabled(&self, uuid: usize) -> bool {
 		match self.enabled.get(&self.get_array_id(uuid)) {
 			Some(b) => { return *b; }

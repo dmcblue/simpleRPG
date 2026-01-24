@@ -55,12 +55,12 @@ impl Game<'_> {
 	}
 
 	pub fn get_conversation(&self) -> &ConversationNode {
-		let mut pointer: &ConversationNode = 
+		let mut pointer: &ConversationNode =
 			self.components.get_conversation(self.state.current_conversation.conversation_uuid);
 
 		for index in &self.state.current_conversation.path {
 			let mut i = index + 0;
-			while !self.components.is_enabled(pointer.prompts[i].uuid) {	
+			while !self.components.is_enabled(pointer.prompts[i].uuid) {
 				i = i + 1;
 			}
 			pointer = &pointer.prompts[i];
@@ -72,6 +72,7 @@ impl Game<'_> {
 	pub fn handle_action(&mut self, action: Action) {
 		self.state.last_action_type = action.action_type.clone();
 		match action.action_type {
+			ActionType::CHALLENGE => (),
 			ActionType::CHECK_INVENTORY => (),
 			ActionType::GO => {
 				self.state.current_location_uuid =
@@ -122,9 +123,17 @@ impl Game<'_> {
 		let entity_uuids: Vec<usize> = self.components.get_location(self.state.current_location_uuid).to_vec();
 		self.scene.location_uuid = self.state.current_location_uuid;
 		self.scene.entity_uuids = entity_uuids.clone();
+		let challenge_uuids: Vec<usize> = entity_uuids.clone().
+			into_iter().
+			filter(|uuid| self.components.is_challenge(*uuid)).
+			collect();
 		let exit_uuids: Vec<usize> = entity_uuids.clone(). //performance
 				into_iter().
 				filter(|uuid| self.components.is_exit(*uuid)).
+				collect();
+		let speaker_uuids: Vec<usize> = entity_uuids.clone(). //performance
+				into_iter().
+				filter(|uuid| self.components.is_speaker(*uuid)).
 				collect();
 		let takeable_item_uuids: Vec<usize> =
 			<Items as Clone>::clone(self.components.get_location_items(self.state.current_location_uuid)).
@@ -132,18 +141,24 @@ impl Game<'_> {
 				filter(|(uuid, quantity)| *quantity > 0 && self.components.is_takeable_item(*uuid)).
 				map(|(uuid, _)| uuid ).
 				collect::<Vec<_>>();
-		let speaker_uuids: Vec<usize> = entity_uuids.clone(). //performance
-				into_iter().
-				filter(|id| self.components.is_speaker(*id)).
-				collect();
 		let vendor_uuids: Vec<usize> = entity_uuids.clone(). //performance
 				into_iter().
-				filter(|id| self.components.is_vendor(*id)).
+				filter(|uuid| self.components.is_vendor(*uuid)).
 				collect();
 		self.scene.actions = Vec::new();
 
 		// this is a waste of memory
 		self.scene.actions.push(Action{action_type: ActionType::LOOK, ..Default::default()});
+		for challenge_uuid in &challenge_uuids {
+			self.scene.actions.push(
+				Action{
+					action_type: ActionType::CHALLENGE,
+					arg_1: Some(*challenge_uuid),
+					..Default::default()
+				}
+			);
+		}
+
 		for exit_uuid in &exit_uuids {
 			self.scene.actions.push(
 				Action{
@@ -153,6 +168,7 @@ impl Game<'_> {
 				}
 			);
 		}
+
 		for speaker_uuid in &speaker_uuids {
 			self.scene.actions.push(
 				Action{
@@ -172,6 +188,7 @@ impl Game<'_> {
 				}
 			);
 		}
+
 		for item_uuid in &takeable_item_uuids {
 			self.scene.actions.push(
 				Action{

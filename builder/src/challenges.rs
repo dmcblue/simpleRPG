@@ -152,8 +152,8 @@ impl ChallengesFile {
 				\t\t\tlevel: {},\n\
 				\t\t\tphases: vec![\n\
 				",
-				challenge.challenge_type.unwrap(),
 				challenge.id.unwrap(),
+				challenge.challenge_type.unwrap(),
 				challenge.name.unwrap(),
 				challenge.level.unwrap(),
 			).as_bytes()

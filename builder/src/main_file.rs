@@ -7,6 +7,7 @@ use std::clone::Clone;
 
 // int
 use super::conversations::ConversationNode;
+use super::entities::Entity;
 
 pub struct MainFile {
 	file_handle: File
@@ -37,6 +38,14 @@ impl MainFile {
 		);
 	}
 
+	pub fn render_at_location(&mut self, location_array_index: usize, entity_uuid: usize) {
+		let _ = self.write_all(format!(
+			"\tcomponents.locations[{}].push({});\n",
+			location_array_index,
+			entity_uuid
+		));
+	}
+
 	pub fn render_conversation(&mut self, conversation: &ConversationNode) {
 		let enabled_str = if conversation.enabled {
 			"true"
@@ -53,6 +62,14 @@ impl MainFile {
 		for child in conversation.prompts.clone() {
 			self.render_conversation(&child);
 		}
+	}
+
+	pub fn render_name(&mut self, array_index: usize, name: String) {
+		let _ = self.write_all(format!(
+			"\tcomponents.names[{}] = \"{}\";\n",
+			array_index,
+			str::replace(name.as_str(), "\"", "\\\"")
+		));
 	}
 
 	pub fn write_all(&mut self, s: String) {

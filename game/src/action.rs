@@ -1,5 +1,6 @@
 #[derive(PartialEq, Clone, Copy)]
 pub enum ActionType {
+	CHALLENGE,
 	CHECK_INVENTORY,
 	GO,
 	LOOK,

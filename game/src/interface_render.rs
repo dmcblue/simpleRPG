@@ -22,11 +22,13 @@ use super::renderer::{
 impl Interface {
 	pub fn render_action(&self, game: &Game, action: &Action) -> String {
 		return match action.action_type {
+			ActionType::CHALLENGE => {
+				return format!("Challenge: {}", game.components.get_name(action.arg_1.unwrap()));
+			}
 			ActionType::CHECK_INVENTORY => {
 				return String::from("Check your inventory");
 			}
 			ActionType::GO => {
-				// return format!("Go to {}", game.components.names[action.arg_1.unwrap()]);
 				return format!("Go to {}", game.components.get_name(action.arg_1.unwrap()));
 			}
 			ActionType::LOOK => String::from("Look around"),
@@ -45,6 +47,10 @@ impl Interface {
 
 	pub fn render_action_taken(&mut self, game: &Game, action: &Action) {
 		match action.action_type {
+			// @DAN TODO
+			ActionType::CHALLENGE => {
+				self.println(format!("You take the challenge '{}'", game.components.get_name(action.arg_1.unwrap())));
+			}
 			ActionType::CHECK_INVENTORY => {
 				let mut any = false;
 				self.println_str("In your inventory:");
@@ -172,7 +178,7 @@ impl Interface {
 
 	pub fn render_global_menu(&mut self) {
 		// this hard code is a mystery
-		self.frame.text(0,self.frame.height - 6, "(q)uit | (s)ave");
+		self.frame.text(0,self.frame.height - 3, "(q)uit | (s)ave");
 	}
 
 	pub fn render_hr(&mut self){

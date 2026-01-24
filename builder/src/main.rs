@@ -69,7 +69,6 @@ fn main() {
 	for dir in dirs {
 		builder.load_entities_from_dir(format!("../data/{}", dir).as_str());
 	}
-	// load_entities_from_dir(&mut builder, "../data");
 
 	let mut conversation_index = 0;
 	let mut vending_index = 0;
@@ -79,7 +78,7 @@ fn main() {
 	for (uuid, entity) in builder.entities {
 		log::info!("{}, {:?}", uuid, entity);
 		let array_index = *builder.uuid_to_index.get(&uuid).unwrap();
-		// all non-conversations and non-vending
+		// all non-conversations and non-vending and non-challenge-related, for some reasons
 		if array_index < builder.counts.vending.start {
 			builder.main_file.write_all(
 				format!(
@@ -95,13 +94,7 @@ fn main() {
 					uuid
 				)
 			);
-			builder.main_file.write_all(
-				format!(
-					"\tcomponents.names[{}] = \"{}\";\n",
-					array_index,
-					str::replace(entity.name.clone().unwrap().as_str(), "\"", "\\\"")
-				)
-			);
+			builder.main_file.render_name(array_index, entity.name.clone().unwrap());
 			builder.main_file.write_all(
 				format!(
 					"\tcomponents.descriptions[{}] = \"{}\";\n",
@@ -129,25 +122,39 @@ fn main() {
 			}
 		}
 
-		// match builder.counts.in_range_of(array_index) {
-		// 	"bobby" => (),
-		// 	_ => ()
-		// }
 		// challenges only
-		// if array_index >= builder.counts.challenges.start {
 		if builder.counts.challenge_cards.in_range(array_index) {
+			builder.main_file.render_name(array_index, entity.name.clone().unwrap());
 			builder.challenges_file.render_card(entity);
 		}
 		else if builder.counts.challenges.in_range(array_index) {
+			builder.main_file.render_name(array_index, entity.name.clone().unwrap());
+			builder.main_file.render_at_location(
+				*builder.uuid_to_index.get(&entity.location.unwrap()).unwrap(),
+				*builder.index_to_uuid.get(&array_index).unwrap()
+			);
+			builder.main_file.write_all(
+				format!(
+					"\tcomponents.uuid_map.insert({}, {});\n",
+					uuid,
+					array_index,
+				)
+			);
+			builder.main_file.write_all(
+				format!(
+					"\tcomponents.uuids[{}] = {};\n",
+					array_index,
+					uuid
+				)
+			);
 			builder.challenges_file.render_challenge(entity);
 		}
 		// challenge types only
-		// else if array_index >= builder.counts.challenge_types.start {
 		else if builder.counts.challenge_types.in_range(array_index) {
+			builder.main_file.render_name(array_index, entity.name.clone().unwrap());
 			builder.challenges_file.render_challenge_type(entity);
 		}
 		// conversations only
-		// else if array_index >= builder.counts.conversations.start {
 		else if builder.counts.conversations.in_range(array_index) {
 			builder.main_file.write_all(
 				format!(
@@ -169,7 +176,6 @@ fn main() {
 			conversation_index = conversation_index + 1;
 		}
 		// vending only
-		// else if array_index >= builder.counts.vending.start {
 		else if builder.counts.vending.in_range(array_index) {
 			builder.main_file.write_all(
 				format!(
@@ -189,14 +195,10 @@ fn main() {
 			vending_index = vending_index + 1;
 		}
 		// exits only
-		// else if array_index >= builder.counts.exits.start {
 		else if builder.counts.exits.in_range(array_index) {
-			builder.main_file.write_all(
-				format!(
-					"\tcomponents.locations[{}].push({});\n",
-					builder.uuid_to_index.get(&entity.location.unwrap()).unwrap(),
-					builder.index_to_uuid.get(&array_index).unwrap(),
-				)
+			builder.main_file.render_at_location(
+				*builder.uuid_to_index.get(&entity.location.unwrap()).unwrap(),
+				*builder.index_to_uuid.get(&array_index).unwrap()
 			);
 			builder.main_file.write_all(
 				format!(
@@ -214,14 +216,10 @@ fn main() {
 			);
 		}
 		// people only
-		// else if array_index >= builder.counts.people.start {
 		else if builder.counts.people.in_range(array_index) {
-			builder.main_file.write_all(
-				format!(
-					"\tcomponents.locations[{}].push({});\n",
-					builder.uuid_to_index.get(&entity.location.unwrap()).unwrap(),
-					builder.index_to_uuid.get(&array_index).unwrap()
-				)
+			builder.main_file.render_at_location(
+				*builder.uuid_to_index.get(&entity.location.unwrap()).unwrap(),
+				*builder.index_to_uuid.get(&array_index).unwrap()
 			);
 			builder.main_file.write_all(
 				format!(
@@ -232,7 +230,6 @@ fn main() {
 			);
 		}
 		// items only
-		// else if array_index >= builder.counts.items.start {
 		else if builder.counts.items.in_range(array_index) {
 			builder.main_file.write_all(
 				format!(
