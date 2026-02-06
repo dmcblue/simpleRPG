@@ -7,7 +7,6 @@ use std::clone::Clone;
 
 // int
 use super::conversations::ConversationNode;
-use super::entities::Entity;
 
 pub struct MainFile {
 	file_handle: File

@@ -22,6 +22,7 @@ use super::entities::{
 	ENTITY_TYPE_ITEM,
 	ENTITY_TYPE_LOCATION,
 	ENTITY_TYPE_PERSON,
+	ENTITY_TYPE_PLAYER_CARD,
 	ENTITY_TYPE_VENDING,
 };
 use super::main_file::MainFile;
@@ -98,6 +99,12 @@ impl Builder {
 		}
 		self.counts.challenge_cards.end = self.counts.total;
 
+		self.counts.player_cards.start = self.counts.total;
+		for entity_uuid in self.counts.player_cards.uuids.clone().iter() {
+			self.add_cache_item(*entity_uuid);
+		}
+		self.counts.player_cards.end = self.counts.total;
+
 	}
 
 	pub fn get_entity(&self, uuid: usize) -> &Entity {
@@ -129,6 +136,7 @@ impl Builder {
 						ENTITY_TYPE_ITEM => { self.counts.items.uuids.push(uuid); },
 						ENTITY_TYPE_LOCATION => { self.counts.locations.uuids.push(uuid); },
 						ENTITY_TYPE_PERSON => { self.counts.people.uuids.push(uuid); },
+						ENTITY_TYPE_PLAYER_CARD => { self.counts.player_cards.uuids.push(uuid); },
 						ENTITY_TYPE_VENDING => { self.counts.vending.uuids.push(uuid); },
 						_ => ()
 					}

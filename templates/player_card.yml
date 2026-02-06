@@ -1,0 +1,12 @@
+metaname: ""
+metadata: []
+id: $SRD_ID0
+type: "PlayerCard"
+challenge_type: 1763943190
+name: ""
+starter: 3
+effects:
+  - type: "TEMP_BUFF"
+    arg_1: 0
+    arg_2: 1
+    arg_3: 1

@@ -15,7 +15,7 @@ pub use challenges::{
 	ChallengeType,
 	Challenge,
 	Phase,
-	ChallengeEffectType,
+	CardEffectType,
 	ChallengeCard,
 	ChallengeEffect,
 };

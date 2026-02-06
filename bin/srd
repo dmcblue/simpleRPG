@@ -14,7 +14,7 @@ containsElement () (
 )
 
 help () (
-	object_type_list="Card, Challenge_Type, Conversation, Exit, Item, Location, Person, Vending"
+	object_type_list="Challenge, ChallengeCard, ChallengeType, Conversation, Exit, Item, Location, Person, PlayerCard, Vending"
 	messages=(
 		"srd <command>\n"
 		"\t- help / --help / -h: Displays this message.\n"

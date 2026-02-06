@@ -1,0 +1,12 @@
+metaname: ""
+metadata: []
+id: 1769293530
+type: "PlayerCard"
+challenge_type: 1763943190
+name: "Climb"
+starter: 12
+effects:
+  - type: "REDUCE"
+    arg_1: 1763943191
+    arg_2: 1
+    arg_3: 0

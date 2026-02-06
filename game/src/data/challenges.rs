@@ -22,7 +22,8 @@ pub struct Phase {
 }
 
 #[derive(PartialEq, Clone, Copy, Debug)]
-pub enum ChallengeEffectType {
+pub enum CardEffectType {
+	REDUCE,
 	TEMP_BUFF,
 }
 
@@ -35,7 +36,7 @@ pub struct ChallengeCard {
 
 #[derive(Clone, Copy, Debug)]
 pub struct ChallengeEffect {
-	pub event_type: ChallengeEffectType,
+	pub event_type: CardEffectType,
 	pub arg_1: usize,
 	pub arg_2: usize,
 	pub arg_3: usize,

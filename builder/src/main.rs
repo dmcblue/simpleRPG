@@ -64,6 +64,7 @@ fn main() {
 		"items",
 		"locations",
 		"persons",
+		"player_cards",
 		"vending",
 	];
 	for dir in dirs {
@@ -76,7 +77,8 @@ fn main() {
 	builder.build_cache();
 
 	for (uuid, entity) in builder.entities {
-		log::info!("{}, {:?}", uuid, entity);
+    	// DEBUG
+		// log::info!("{}, {:?}", uuid, entity);
 		let array_index = *builder.uuid_to_index.get(&uuid).unwrap();
 		// all non-conversations and non-vending and non-challenge-related, for some reasons
 		if array_index < builder.counts.vending.start {
@@ -123,9 +125,26 @@ fn main() {
 		}
 
 		// challenges only
-		if builder.counts.challenge_cards.in_range(array_index) {
+		if builder.counts.player_cards.in_range(array_index) {
 			builder.main_file.render_name(array_index, entity.name.clone().unwrap());
-			builder.challenges_file.render_card(entity);
+			builder.challenges_file.render_player_card(&entity);
+			// current_player_card_uuids
+			// player_cards
+			let starter = entity.starter.clone().unwrap();
+			if starter > 0 {
+				for _n in 0..starter {
+					builder.main_file.write_all(
+						format!(
+							"\tcomponents.current_player_card_uuids.push({});\n",
+							uuid,
+						)
+					);
+				}
+			}
+		}
+		else if builder.counts.challenge_cards.in_range(array_index) {
+			builder.main_file.render_name(array_index, entity.name.clone().unwrap());
+			builder.challenges_file.render_challenge_card(&entity);
 		}
 		else if builder.counts.challenges.in_range(array_index) {
 			builder.main_file.render_name(array_index, entity.name.clone().unwrap());

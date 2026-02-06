@@ -24,6 +24,7 @@ pub const ENTITY_TYPE_EXIT: &str = "Exit";
 pub const ENTITY_TYPE_ITEM: &str = "Item";
 pub const ENTITY_TYPE_LOCATION: &str = "Location";
 pub const ENTITY_TYPE_PERSON: &str = "Person";
+pub const ENTITY_TYPE_PLAYER_CARD: &str = "PlayerCard";
 pub const ENTITY_TYPE_VENDING: &str = "Vending";
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
@@ -79,4 +80,5 @@ pub struct Entity {
 	pub phases: Option<Vec<ChallengePhase>>,
 	// Card specific
 	pub effects: Option<Vec<Effect>>,
+	pub starter: Option<usize>,
 }

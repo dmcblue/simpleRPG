@@ -51,7 +51,7 @@ impl ChallengesFile {
 	pub fn begin(&mut self) {
 		let _ = self.file_handle.write_all(
 			b"use std::collections::HashMap;\n\
-			use super::challenges::{Challenge, ChallengeType, Phase, ChallengeCard, ChallengeEffect, ChallengeEffectType};\n\
+			use super::challenges::{Challenge, ChallengeType, Phase, ChallengeCard, ChallengeEffect, CardEffectType};\n\
 			use super::components::{Components};\n\
 			\n\
 			pub fn load_challenges(components: &mut Components) {\n\
@@ -74,26 +74,35 @@ impl ChallengesFile {
 		);
 	}
 
-	pub fn render_card(&mut self, challenge_card: Entity) {
+	pub fn render_challenge_card(&mut self, challenge_card: &Entity) {
+		self.render_card(String::from("challenge_cards"), challenge_card);
+	}
+
+	pub fn render_player_card(&mut self, challenge_card: &Entity) {
+		self.render_card(String::from("player_cards"), challenge_card);
+	}
+
+	pub fn render_card(&mut self, category: String, challenge_card: &Entity) {
 		let _ = self.file_handle.write_all(
 			format!(
-				"\tcomponents.challenge_cards.insert(\n\
+				"\tcomponents.{}.insert(\n\
 				\t\t{},\n\
 				\t\tChallengeCard{{\n\
 				\t\t\tname: String::from(\"{}\"),\n\
 				\t\t\tchallenge_type_uuid: {},\n\
 				\t\t\teffects: vec![\n\
 				",
+				category,
 				challenge_card.id.unwrap(),
-				challenge_card.name.unwrap(),
+				challenge_card.name.as_ref().unwrap(),
 				challenge_card.challenge_type.unwrap(),
 			).as_bytes()
 		);
-		for effect in challenge_card.effects.unwrap() {
+		for effect in challenge_card.effects.as_ref().unwrap() {
 			let _ = self.file_handle.write_all(
 				format!(
 					"\t\t\t\tChallengeEffect {{\n\
-					\t\t\t\t\tevent_type: ChallengeEffectType::{},\n\
+					\t\t\t\t\tevent_type: CardEffectType::{},\n\
 					\t\t\t\t\targ_1: {},\n\
 					\t\t\t\t\targ_2: {},\n\
 					\t\t\t\t\targ_3: {},\n\
@@ -225,7 +234,7 @@ impl ChallengesFile {
 // }
 
 // #[derive(PartialEq, Clone, Copy, Debug)]
-// pub enum ChallengeEffectType {
+// pub enum CardEffectType {
 // 	TEMP_BUFF,
 // }
 
